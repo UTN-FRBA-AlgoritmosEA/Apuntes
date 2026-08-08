@@ -1,0 +1,244 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10. Hola programa principal</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>10. Hola programa principal</h1>
+<p class="nota">Cómo se arma un programa entero, de punta a punta.</p>
+
+<p>Hasta ahora vimos instrucciones y estructuras sueltas. Es hora de juntarlas en un <b>programa
+completo</b>: el clásico «Hola, mundo», que no hace más que saludar por pantalla. Empecemos por el
+diagrama.</p>
+
+<script>Diagrama`
+  programaprincipal {
+    escribir "Hola, mundo"
+  }
+`</script>
+
+<p>Ese bloque es el <b>programa principal</b>. Las marcas circulares de <b>inicio</b> (I) y <b>fin</b>
+(F) señalan por dónde empieza y por dónde termina la ejecución. Todo lo que el programa hace va entre
+esas dos marcas.</p>
+
+<h2>El archivo completo, en C++</h2>
+
+<p>Para que ese diagrama sea un programa de C++ que se pueda compilar y ejecutar, el archivo entero se
+escribe así:</p>
+
+<script>Código`
+#include <iostream>
+
+int main() {
+    std::cout << "Hola, mundo" << std::endl;
+    return 0;
+}
+`</script>
+
+<p>Vamos parte por parte:</p>
+
+<ul>
+  <li><code>#include &lt;iostream&gt;</code> trae la biblioteca de <b>entrada y salida</b> (<i>iostream</i>
+  = <i>input/output stream</i>), que es donde están definidos <code>cout</code> y <code>cin</code>. Sin
+  ese <code>#include</code>, el compilador no sabría qué son y daría error.</li>
+  <li><code>int main()</code> es el <b>punto de entrada</b> del programa: cuando lo ejecutamos, la
+  computadora empieza a correr las instrucciones que están dentro de <code>main</code>. Todo programa
+  de C++ tiene exactamente uno. Es la contraparte del <b>programa principal</b> del diagrama: las marcas
+  de inicio (I) y fin (F) son, justamente, la apertura y el cierre del <code>main</code>.</li>
+  <li><code>return 0;</code> es lo último que hace el <code>main</code>: le devuelve un número al
+  sistema operativo para avisar cómo salió todo. Por convención, <code>0</code> significa «terminó bien,
+  sin errores»; un número distinto avisaría que algo falló.</li>
+</ul>
+
+<p>El <code>main</code> es, en realidad, una <b>función</b> (algo que veremos más adelante); por ahora
+alcanza con saber que el <code>int</code> de adelante y el <code>return 0</code> del final van de la
+mano.</p>
+
+<p>Un detalle más: escribimos <code>std::cout</code> y <code>std::endl</code>, con ese <code>std::</code>
+adelante. Es porque <code>cout</code>, <code>cin</code> y <code>endl</code> viven dentro de un
+<b>espacio de nombres</b> llamado <code>std</code> (de <i>standard</i>, la biblioteca estándar), y el
+<code>::</code> significa «el <code>cout</code> que está dentro de <code>std</code>».</p>
+
+<h2>Evitando el <code>std::</code> con <code>using namespace</code></h2>
+
+<p>Poner <code>std::</code> delante de cada nombre se vuelve tedioso enseguida. Para evitarlo, agregamos
+cerca del principio la línea <code>using namespace std;</code>, que le dice al compilador: «si ves un
+nombre suelto, buscalo también dentro de <code>std</code>». Con eso podemos escribir <code>cout</code> y
+<code>endl</code> a secas:</p>
+
+<script>Código`
+#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hola, mundo" << endl;
+    return 0;
+}
+`</script>
+
+<p>¿Y qué es un <b>espacio de nombres</b> (<i>namespace</i>)? Es una forma de agrupar nombres para que
+no choquen entre sí: dos bibliotecas distintas podrían definir cada una algo llamado <code>max</code>,
+y el namespace permite distinguir uno de otro. La biblioteca estándar de C++ mete todo lo suyo en el
+namespace <code>std</code>. No vamos a ahondar más; por ahora alcanza con reconocerlo y saber por qué
+aparece.</p>
+
+<p>De hecho, es lo que veníamos asumiendo: en los ejemplos anteriores escribimos <code>cout</code> y
+<code>cin</code> a secas dando por sentado este <code>using namespace std;</code>.</p>
+
+<p>Un dato: los namespaces son una característica propia de <b>C++</b>; en <b>C</b> no existen. Por eso,
+en C los nombres de las funciones de una biblioteca suelen llevar <b>prefijos o sufijos</b> para evitar
+que choquen entre sí —una especie de namespace hecho a mano.</p>
+
+<p>Con esto ya sabemos armar un programa entero: los <code>#include</code> que necesitemos arriba, el
+<code>main</code> con nuestro algoritmo adentro y el <code>return 0</code> al final. De acá en más,
+cuando mostremos un programa completo, va a tener esta forma.</p>
+
+<h2>Un programa completo: sumar dos números</h2>
+
+<p>Cerramos con un programa que hace algo un poco más útil que saludar: pide dos números, los suma y
+muestra el resultado. Primero, el diagrama:</p>
+
+<script>Diagrama`
+  programaprincipal {
+    leer a, b
+    suma := a + b
+    escribir "La suma es", suma
+  }
+`</script>
+
+<p>Pero al diagrama le falta algo: en ningún lado dijimos <b>qué son</b> <code>a</code>, <code>b</code>
+y <code>suma</code>. Nos faltó <b>declarar las variables locales</b>. Con la declaración de las variables, el
+diagrama queda así:</p>
+
+<script>Diagrama`
+  programaprincipal {
+    locales {
+      int a
+      int b
+      int suma
+    }
+    leer a, b
+    suma := a + b
+    escribir suma
+  }
+`</script>
+
+<p>Un detalle de notación: en el papel las declaraciones se suelen poner <b>al costado</b> del
+diagrama (en un recuadro o sin él), cerquita. Acá, para que los diagramas no se hagan tan anchos, las
+ponemos <b>debajo del inicio, hacia un lado</b>.</p>
+<p>Se llaman variables locales porque solamente son visibles dentro del bloque donde fueron definidas,
+es decir que solo son visibles en este diagrama o dentro de las <code>{}</code> donde fueron escritas.
+Vamos a ver un poco más sobre el "alcance" de los símbolos un poco más adelante.</p>
+
+<p>El archivo completo en C++ quedaría algo así:</p>
+
+<script>Código`
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a;
+    int b;
+    int suma;
+
+    cout << "Ingrese el primer número: ";
+    cin >> a;
+
+    cout << "Ingrese el segundo número: ";
+    cin >> b;
+
+    suma = a + b;
+    cout << "La suma es " << suma << endl;
+
+    return 0;
+}
+`</script>
+
+<p>Fijate una diferencia que ya conocemos: en el código aparecen los texto (<code>cout</code>) que
+en el diagrama no hacían falta. En el diagrama se entiende por contexto qué estamos pidiendo; el usuario
+del programa, en cambio, necesita que se lo digamos. Y fijate también que hay espacios antes de pedir o
+mostrar un valor. Esto sirve para separar el valor del texto que lo rodea.</p>
+
+<p>Respecto a las variables, si bien como ejercicio vamos a declararlas al comienzo y asignarles valores
+como parte de las instrucciones, en el código pueden declararse en medio de las instrucciones y pueden
+asignarse directamente un valor inicial pero solo pueden usarse después de haberse declarado y dentro de
+las <code>{}</code> donde fueron declaradas. Así que lo siguiente estaría bien también:
+
+<script>Código`
+    int a;
+    int b;
+
+    cout << "Ingrese el primer número: ";
+    cin >> a;
+
+    cout << "Ingrese el segundo número: ";
+    cin >> b;
+
+    int suma = a + b;
+    cout << "La suma es " << suma << endl;
+`</script>
+
+<p>Y no es estrictamente necesario que todo sea una variable. Esto también es válido:</p>
+
+<script>Código`
+    cout << "La suma es " << a + b << endl;
+`</script>
+
+<p>Sin embargo, a efectos de la materia, vamos a preferir usar variables para poder darle un nombre
+a lo que estamos haciendo, lo cual mejora la legibilidad. Ya tendrán tiempo en la carrera para
+ahorrarse un par de caracteres.</p>
+
+<h2>Luz, cámara, acción</h2>
+
+<p>Ahora veamos el programa en ejecución.</p>
+
+<p>Si bien los diagramas no compilan podemos hacer un seguimiento a mano de la ejecución para
+<b>verlo andar</b>. A continuación está la ejecución del diagrama <b>paso a paso</b>: usá los controles
+para avanzar. En cada paso se <b>resalta</b> la instrucción que se está ejecutando, la <b>consola</b>
+muestra lo que el programa escribe y pide, y más abajo se ven los <b>valores de las variables</b> en cada
+momento. Cuando dicen «desconocido» es porque no sabemos qué valor tienen ya que nunca les asignamos un
+valor, pero ya ocupan un espacio en memoria y por lo tanto ya tienen un valor residual de lo que había
+en ese lugar de memoria antes de asignarse a nuestro programa. Usar una variable con valor residual
+es un error de programación y por tanto los compiladores modernos ayudan a que eso no ocurra advirtiendo
+de ese error cuando existe esa posibilidad.</p>
+
+<p>Sin más preámbulos:</p>
+
+<script>Reproductor(`
+  programaprincipal {
+    locales {
+      int a
+      int b
+      int suma
+    }
+    leer ≤01a≥, ≤02b≥
+    ≤03suma≥ := ≤03a + b≥
+    escribir ≤04suma≥
+  }
+`, [
+  { expresiones:{ "a":{}, "b":{}, "suma":{} } },
+  { zona:1, salida:"Ingrese el primer número: " },
+  { zona:1, expresiones:{ "a":5 }, salida:"5\n" },
+  { zona:2, salida:"Ingrese el segundo número: " },
+  { zona:2, expresiones:{ "b":3 }, salida:"3\n" },
+  { zona:3, expresiones:{ "suma":8 } },
+  { zona:4, salida:"La suma es 8\n" },
+  { zona:"F" }
+], { consola:{ lineas:4 } })</script>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="11.%20Tomando%20decisiones.html">Siguiente: Tomando decisiones →</a>
+</div>
+
+</body>
+</html>

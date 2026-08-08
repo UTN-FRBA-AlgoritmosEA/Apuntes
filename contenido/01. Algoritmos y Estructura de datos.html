@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01. Algoritmos y Estructura de datos</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>01. Algoritmos y Estructura de datos</h1>
+<p class="nota">Qué es un algoritmo, qué es una estructura de datos y por qué siempre aparecen juntos.</p>
+
+<p>El nombre de la materia ya adelanta de qué se trata. En 1976 Niklaus Wirth tituló su libro clásico
+con una ecuación que, si la pensás un rato, resume casi todo lo que vamos a ver:</p>
+
+<p class="ecuacion"><b>Algoritmos + Estructuras de datos = Programas</b></p>
+
+<p>Lo que dice esa igualdad es que un programa no es solamente una lista de instrucciones. Es una
+<b>manera de actuar</b> —el algoritmo— sobre una <b>manera de organizar la información</b> —la
+estructura de datos—. Las dos cosas se piensan al mismo tiempo, porque cómo guardás los datos cambia
+cómo tenés que operarlos, y al revés.</p>
+
+<h2>¿Qué es un algoritmo?</h2>
+
+<p>Un <b>algoritmo</b> es una secuencia finita de pasos, bien definidos, que a partir de ciertos datos
+de entrada resuelve un problema y produce un resultado. La palabra viene del matemático persa
+<i>al-Juarismi</i> (siglo IX), pero la idea es muchísimo más vieja que la computadora: una receta de
+cocina o el método para dividir a mano que aprendiste en la primaria también son algoritmos.</p>
+
+<p>No cualquier descripción sirve. Para que la podamos llamar algoritmo, tiene que cumplir algunas
+propiedades:</p>
+
+<ul>
+  <li><b>Finitud</b>: tiene que terminar. Después de una cantidad finita de pasos, tenés la respuesta
+      y el algoritmo se detiene; no puede quedar dando vueltas para siempre.</li>
+  <li><b>Precisión</b>: cada paso está escrito sin ambigüedad. Dos personas que lo sigan al pie de la
+      letra tienen que hacer exactamente lo mismo; nada queda librado a la interpretación.</li>
+  <li><b>Entrada</b>: recibe cero o más datos, con los que va a trabajar.</li>
+  <li><b>Salida</b>: produce uno o más resultados, que son la respuesta al problema.</li>
+  <li><b>Efectividad</b>: cada paso debe poder ejecutarse (en nuestro caso, por una computadora).</li>
+</ul>
+
+<p>Un mismo problema admite <i>muchos</i> algoritmos distintos, y no todos valen lo mismo. Unos son
+más rápidos, otros gastan menos memoria, otros son más fáciles de entender. Aprender a compararlos
+—a medir cuánto cuestan— va a ser una de nuestras tareas centrales.</p>
+
+<h2>¿Qué es una estructura de datos?</h2>
+
+<p>Una <b>estructura de datos</b> es la forma en que organizamos y representamos la información para
+que el algoritmo pueda trabajar con ella. Los datos de un problema real —un padrón de personas, un
+mapa de rutas, un texto— no vienen ordenados solos: somos nosotros los que decidimos cómo
+representarlos, y esa decisión es parte del diseño.</p>
+
+<p>Todo arranca por los <b>tipos elementales</b> —enteros, reales, caracteres, lógicos—, que son los
+tipos que el <b>procesador</b> ya entiende y sabe manipular directamente. Son el ladrillo con el que
+se construye todo lo demás.</p>
+
+<p>A partir de ellos, los lenguajes nos dan herramientas para <b>definir nuestros propios tipos</b>,
+combinando los elementales de distintas maneras: <b>arreglos</b>, <b>registros</b>, <b>punteros</b>,
+<b>enumeraciones</b> y demás. Con ellos armamos representaciones más parecidas al problema que
+queremos resolver. Los vamos a ver en detalle más adelante.</p>
+
+<p>Además, contamos con <b>bibliotecas de terceros</b> que ya traen resueltos ciertos tipos
+especiales, así no tenemos que reescribirlos nosotros cada vez. Un ejemplo típico es
+<code>string</code>, que nos permite manejar cadenas de texto dinámicas (que crecen y se achican
+solas) sin tener que ocuparnos de los detalles internos.</p>
+
+<p>Más adelante vamos a ver, además, listas, pilas, colas y árboles. Cada estructura hace
+baratas algunas operaciones y caras otras; por eso elegir bien no es un detalle menor: muchas veces
+es media solución del problema.</p>
+
+<h2>Por qué van siempre juntos</h2>
+
+<p>Wirth insistía en que el algoritmo y los datos son <b>dos caras de lo mismo</b>. La forma en que
+representás la información determina qué operaciones te salen fáciles, y eso a su vez determina cómo
+va a ser el algoritmo. Si cambiás la estructura de datos, casi siempre cambia también el algoritmo
+—y al revés—. Por eso no conviene pensarlos por separado.</p>
+
+<blockquote>“En la práctica, el programador debe decidir la representación de los datos y el
+algoritmo al mismo tiempo: cada decisión influye sobre la otra.”</blockquote>
+
+<h2>Un ejemplo clásico: el algoritmo de Euclides</h2>
+
+<p>Para calcular el <b>máximo común divisor</b> de dos números, Euclides se dio cuenta de una cosa:
+<code>mcd(a, b)</code> no cambia si reemplazás <code>a</code> por el resto de dividir <code>a</code>
+por <code>b</code>. Repitiendo esa idea hasta que el resto da cero, te queda la respuesta. Fijate que
+todo el algoritmo es apenas un puñado de pasos sobre dos datos enteros:</p>
+
+<pre class="pseudo">
+leer a
+leer b
+mientras b ≠ 0
+    r ← a mod b
+    a ← b
+    b ← r
+
+escribir a
+</pre>
+
+<p>Ahí tenés la ecuación de Wirth en miniatura: dos <b>enteros</b> (la estructura de datos, lo más
+simple que hay) y un <b>procedimiento</b> de pocos pasos (el algoritmo) que, juntos, forman un
+programa útil. A lo largo del curso vamos a ir haciendo crecer las dos partes: datos cada vez más
+elaborados y algoritmos cada vez más ingeniosos para trabajarlos.</p>
+
+<h2>Una estrategia: divide y vencerás</h2>
+
+<p>Muchos problemas son demasiado grandes para atacarlos de una sola vez. Frente a eso vamos a usar,
+una y otra vez, una estrategia con siglos de historia: <b>divide y vencerás</b>. La idea es simple de
+enunciar: en lugar de pelear con el problema entero, lo <b>partimos</b> en subproblemas más chicos y
+del mismo tipo, resolvemos cada uno por separado —muchas veces aplicándoles la misma idea— y después
+<b>combinamos</b> esas soluciones parciales para armar la solución del problema original.</p>
+
+<p>Es la misma lógica que aplicás sin darte cuenta cuando seguís una receta de cocina. Cada paso
+nombra una tarea completa que, a la vez, puede esconder varios pasos más chicos. En una receta larga,
+leer «<i>rebanar un huevo duro</i>» ya te da una idea de lo que hay que hacer y te ayuda a entender
+sin entrar en tanto detalle. Pero esa tarea, si hace falta, se despliega en «<i>hervir un huevo,
+pelarlo y rebanarlo</i>»; y «<i>hervir un huevo</i>», a su vez, en «<i>hervir agua, colocar el huevo,
+esperar diez minutos y pasarlo por agua fría</i>». Si todos los pasos estuvieran explicados en una
+sola lista larguísima, la receta sería muy difícil de leer.</p>
+
+<p>Con los algoritmos hacemos lo mismo: partimos el problema en tareas con nombre, cada una lo
+bastante chica como para entenderla y resolverla por separado.</p>
+
+<p>Poder ponerle un nombre a cada parte tiene dos ventajas concretas. Por un lado, <b>facilita la
+comprensión</b> de quien tiene que leer el algoritmo: se entiende qué hace cada parte sin necesidad de
+meterse en cómo lo hace. Por otro, <b>facilita la depuración</b>: como cada subprograma tiene un
+alcance más chico y acotado, es más fácil probarlo por separado, ubicar dónde está el error y medir
+si realmente funciona como esperábamos.</p>
+
+<p>Es una de las herramientas más potentes para diseñar algoritmos, y vamos a recurrir a ella una y
+otra vez a lo largo de la materia.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="02.%20Lenguajes%20y%20compiladores.html">Siguiente: Lenguajes y compiladores →</a>
+</div>
+
+</body>
+</html>

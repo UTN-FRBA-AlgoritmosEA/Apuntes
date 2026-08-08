@@ -1,0 +1,125 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02. Lenguajes y compiladores</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>02. Lenguajes y compiladores</h1>
+<p class="nota">Con qué le hablamos a la computadora y quién traduce lo que escribimos.</p>
+
+<p>Antes vimos cómo expresar un algoritmo con palabras y flechas. Pero la computadora no entiende
+«palabras y flechas», y acá vamos a ver cómo se salva la distancia entre lo que nosotros queremos
+expresar y lo que la máquina realmente ejecuta.</p>
+
+<h2>Del lenguaje de máquina al alto nivel</h2>
+
+<p>Cada procesador se diseña para entender un <b>juego de instrucciones</b> determinado, fijado durante
+el diseño de su arquitectura. Cada instrucción tiene un identificador binario —el llamado <b>lenguaje
+de máquina</b>—, y eso es lo único que el procesador necesita para ejecutar un programa.</p>
+
+<p>Los primeros programas se escribieron directamente así, en lenguaje de máquina. Pero eran muy
+difíciles tanto de escribir como de leer: largas tiras de números donde cualquier error pasaba
+inadvertido. Hacía falta un lenguaje de mejor lectura para las personas, pero que igual pudiera
+traducirse a máquina.</p>
+
+<p>Así nace el <b>ensamblador</b> (assembly). Es un <b>lenguaje de bajo nivel</b>: básicamente consiste
+en darle un nombre <b>mnemónico</b> a cada instrucción para facilitar la lectura, pero en el fondo se
+sigue escribiendo en lenguaje de máquina, instrucción por instrucción.</p>
+
+<p>El problema de un lenguaje de bajo nivel es que está atado a la arquitectura: al cambiar de
+procesador, el juego de instrucciones puede ser otro y el programa ya no sirve más. Por eso fue
+necesario crear <b>lenguajes de más alto nivel</b>, que permitieran escribir programas
+independientemente de la arquitectura.</p>
+
+<p>Si bien los programas existen incluso desde antes que las computadoras (gracias, Ada), el primer
+lenguaje de programación de alto nivel de uso masivo fue <b>Fortran</b>, que —dato no menor— se sigue
+usando en la actualidad. En un lenguaje de alto nivel expresamos la idea con una notación parecida a
+como la pensamos, y una sola línea suele equivaler a muchas instrucciones de máquina. Por ejemplo:</p>
+
+<script>Código`
+total = a + b * c;
+`</script>
+
+<p>se ve simple, pero por detrás implica traer valores de memoria, multiplicar, sumar y guardar el
+resultado. Nosotros escribimos la idea; alguien tiene que bajarla al detalle.</p>
+
+<h2>Qué vamos a usar</h2>
+
+<p>Al momento de escribir en la computadora vamos a usar <b>C/C++</b>. Los dos, aunque en realidad lo
+que queremos es <b>C</b>: está pensado para la <b>programación estructurada</b>, que es justamente de
+lo que trata la materia. Tomamos algunas extensiones de <b>C++</b> nada más para que la experiencia no
+sea tan áspera.</p>
+
+<p>Pero antes de llegar a la computadora vamos a usar también un <b>lenguaje de diagramas</b>, que
+iremos describiendo de a poco a lo largo de la cursada. Ese lenguaje nos permite <b>ver de manera
+gráfica</b> los algoritmos que estamos escribiendo y, al mismo tiempo, <b>omitir los detalles
+demasiado técnicos</b> que un lenguaje como C/C++ exige y que, en esta etapa de aprendizaje, más que
+ayudar, distraen. Primero pensamos y dibujamos la idea; después la bajamos a C/C++.</p>
+
+<h2>Los compiladores</h2>
+
+<p>Dijimos que escribimos la idea en alto nivel, pero que alguien tiene que bajarla al detalle que la
+máquina ejecuta. Ese alguien es el <b>compilador</b>: un programa que <b>traduce</b> lo que escribimos
+en un lenguaje de alto nivel (el <b>código fuente</b>) al lenguaje de máquina que el procesador puede
+ejecutar (el <b>código ejecutable</b>). Es el puente entre nuestro mundo y el de la máquina.</p>
+
+<p>Antes de traducir, el compilador <b>revisa</b> que el programa respete las reglas del lenguaje. Si
+encuentra un error de escritura —una regla mal aplicada—, no traduce nada y nos avisa dónde está el
+problema. Recién cuando todo está en orden produce el ejecutable. Y algo importante: <b>traduce una
+sola vez</b>; después el ejecutable se puede correr todas las veces que quieras sin volver a compilar.</p>
+
+<p>Hay otra forma de salvar la misma distancia: los <b>intérpretes</b>. En lugar de traducir todo el
+programa de antemano, un intérprete lo lee y lo ejecuta <b>paso a paso, sobre la marcha</b>. Cada
+enfoque tiene su ventaja: lo compilado suele correr más rápido, y lo interpretado es más flexible e
+inmediato para probar. Muchos lenguajes de hoy combinan las dos ideas.</p>
+
+<h2>Cómo conviven</h2>
+
+<p>En la práctica, casi nunca programamos solos ni en lenguaje de máquina: nos apoyamos en toda una
+cadena de herramientas. El recorrido típico es:</p>
+
+<pre class="pseudo">
+código fuente  →  compilador  →  ejecutable  →  lo corre el procesador
+</pre>
+
+<p>Y esa cadena tiene todavía más piezas. Como vimos antes, aprovechamos <b>bibliotecas</b> ya escritas
+y ya traducidas por otros (como <code>string</code>): nuestro programa se combina con ellas para formar
+el ejecutable final, sin que tengamos que reescribir esas partes. El editor donde tipeamos, el
+compilador que traduce, las bibliotecas que reutilizamos y el sistema que finalmente ejecuta el
+programa conviven como un mismo entorno de trabajo.</p>
+
+<h2>¿Y en qué lenguaje se escribe un compilador?</h2>
+
+<p>Un compilador es, al fin y al cabo, un programa más; y si es un programa, está escrito en algún
+lenguaje. Acá aparece una pregunta con trampa: si te estás preguntando cómo se hacen los compiladores,
+la respuesta es que se hacen en <b>otro</b> lenguaje, porque —claro— el lenguaje que querés traducir
+todavía no se puede traducir: no existe nada que lo entienda. El primer compilador de un lenguaje
+nuevo se escribe, entonces, en un lenguaje que ya tenga el suyo (muchas veces ensamblador, o un
+lenguaje anterior).</p>
+
+<p>Pero una vez escrito ese primer compilador, pasa algo elegante: muchos compiladores se vuelven a
+escribir en el <b>mismo</b> lenguaje que compilan. Con la primera versión se compila la segunda —que
+ya está escrita en su propio lenguaje— y, a partir de ahí, el compilador es capaz de compilarse a sí
+mismo. A esta maniobra se la conoce como <b>bootstrapping</b> (algo así como «levantarse tirando de
+los propios cordones»).</p>
+
+<p>Por eso no es raro que el compilador de C esté escrito en C, el de Pascal en Pascal, y así. Suena a
+paradoja, pero no lo es: siempre hay un primer eslabón escrito en otra cosa, y recién después el
+lenguaje se vuelve capaz de sostenerse solo.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="03.%20Programa%20y%20proceso.html">Siguiente: Programa y proceso →</a>
+</div>
+
+</body>
+</html>

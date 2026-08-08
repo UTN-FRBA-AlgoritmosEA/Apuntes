@@ -1,0 +1,58 @@
+/* Estilos compartidos por todos los apuntes (carpeta contenido/). */
+
+body { max-width:760px; margin:0 auto; padding:48px 24px 120px;
+       font-family:Georgia,'Times New Roman',serif; color:#242424; background:#fff; line-height:1.65; }
+h1 { font-weight:normal; font-size:30px; margin:0 0 6px; }
+h2 { font-weight:normal; font-size:22px; margin:40px 0 6px; color:#333; }
+p  { margin:10px 0 14px; }
+ul { margin:10px 0 14px; padding-left:22px; }
+li { margin:4px 0; }
+code { background:#f0ece2; padding:1px 5px; border-radius:3px; font-size:.9em; }
+hr { border:0; border-top:1px solid #e6ddc9; margin:36px 0; }
+.nota { color:#6a6a6a; font-size:14px; }
+.ecuacion { text-align:center; font-size:20px; margin:24px 0; color:#333; }
+blockquote { margin:18px 0; padding:8px 18px; border-left:3px solid #d8cbaa;
+             color:#555; font-style:italic; }
+pre.pseudo { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+             font-size:15px; line-height:1.5; background:#f7f3ea; border:1px solid #e6ddc9;
+             border-radius:6px; padding:14px 18px; margin:18px 0; overflow-x:auto; color:#2c2c2c; }
+.volver { display:inline-block; margin-bottom:8px; font-size:14px; color:#b08a3e; text-decoration:none; }
+.volver:hover { text-decoration:underline; }
+
+/* Ejemplo con pestañas Diagrama / Código (la barra la arma estilos/apunte.js). */
+.ejemplo { border:1px solid #e6ddc9; border-radius:6px; margin:18px 0; overflow:hidden; }
+.ejemplo-tabs { display:flex; gap:0; background:#faf6ec; border-bottom:1px solid #e6ddc9; }
+.ejemplo-tab { font:14px Georgia,'Times New Roman',serif; background:none; border:none;
+               padding:8px 16px; cursor:pointer; color:#6a6a6a;
+               border-bottom:2px solid transparent; margin-bottom:-1px; }
+.ejemplo-tab:hover { color:#242424; }
+.ejemplo-tab.is-activa { color:#242424; border-bottom-color:#b08a3e; }
+/* Sin padding lateral: el diagrama ya trae su propio margen y el código llena el panel. */
+.ejemplo-panel { padding:0; }
+/* El código integra su recuadro con el borde del contenedor (sin borde/redondeo/margen propios). */
+.ejemplo-panel .dialecto-code { margin:0; border:0; border-radius:0; }
+/* Sin JS: se muestra solo el primer panel (el diagrama). */
+.ejemplo-panel { display:none; }
+.ejemplo-panel:first-of-type { display:block; }
+/* Con JS (barra insertada), manda la clase .is-activa. */
+.ejemplo.is-mejorada .ejemplo-panel { display:none; }
+.ejemplo.is-mejorada .ejemplo-panel.is-activa { display:block; }
+
+/* Modo oscuro — coordinado con el que ya inyecta dialecto.js para diagramas/código. */
+@media (prefers-color-scheme: dark) {
+  body { background:#1b1b1f; color:#dcdce2; }
+  h1 { color:#f0f0f2; }
+  h2 { color:#cfcfd6; }
+  code { background:#2e2e35; color:#e2e2e8; }
+  hr { border-top-color:#3a3a42; }
+  .nota { color:#a8a8b0; }
+  .ecuacion { color:#e2e2e8; }
+  blockquote { border-left-color:#5c5647; color:#b3b3bb; }
+  pre.pseudo { background:#26262b; border-color:#44444c; color:#dcdce2; }
+  .volver { color:#d6b45a; }
+  .ejemplo { border-color:#44444c; }
+  .ejemplo-tabs { background:#26262b; border-bottom-color:#44444c; }
+  .ejemplo-tab { color:#a8a8b0; }
+  .ejemplo-tab:hover { color:#e2e2e8; }
+  .ejemplo-tab.is-activa { color:#f0f0f2; border-bottom-color:#d6b45a; }
+}

@@ -1,0 +1,46 @@
+/* Estilos de la portada / índice (index.html). */
+
+body { max-width:760px; margin:0 auto; padding:48px 24px 120px;
+       font-family:Georgia,'Times New Roman',serif; color:#242424; background:#fff; line-height:1.65; }
+h1 { font-weight:normal; font-size:32px; margin:0 0 4px; }
+h2 { font-weight:normal; font-size:20px; margin:44px 0 10px; color:#333;
+     border-bottom:1px solid #e6ddc9; padding-bottom:6px; }
+p  { margin:10px 0 14px; }
+.sub { color:#6a6a6a; font-size:15px; margin-top:0; }
+
+/* Índice de capítulos */
+ol.toc { list-style:none; counter-reset:cap; padding:0; margin:0; }
+ol.toc li { counter-increment:cap; margin:0; }
+ol.toc li a {
+  display:flex; align-items:baseline; gap:14px;
+  text-decoration:none; color:inherit;
+  padding:14px 16px; border:1px solid #e6ddc9; border-radius:6px;
+  margin:8px 0; transition:background .12s, border-color .12s;
+}
+ol.toc li a:hover { background:#faf6ec; border-color:#d8cbaa; }
+ol.toc li a::before {
+  content:counter(cap, decimal-leading-zero);
+  font-variant-numeric:tabular-nums; color:#b08a3e; font-size:14px;
+  min-width:24px;
+}
+ol.toc .titulo { font-size:18px; }
+ol.toc .desc { display:block; color:#6a6a6a; font-size:14px; margin-top:2px; }
+
+.pendiente { color:#9a9a9a; }
+.pendiente a { pointer-events:none; }
+footer { margin-top:56px; color:#9a9a9a; font-size:13px;
+         border-top:1px solid #e6ddc9; padding-top:16px; }
+
+/* Modo oscuro — coordinado con el de los apuntes y dialecto.js. */
+@media (prefers-color-scheme: dark) {
+  body { background:#1b1b1f; color:#dcdce2; }
+  h1 { color:#f0f0f2; }
+  h2 { color:#cfcfd6; border-bottom-color:#3a3a42; }
+  .sub { color:#a8a8b0; }
+  ol.toc li a { border-color:#44444c; }
+  ol.toc li a:hover { background:#2a2a30; border-color:#5c5647; }
+  ol.toc li a::before { color:#d6b45a; }
+  ol.toc .desc { color:#a8a8b0; }
+  .pendiente { color:#8a8a94; }
+  footer { color:#8a8a94; border-top-color:#3a3a42; }
+}

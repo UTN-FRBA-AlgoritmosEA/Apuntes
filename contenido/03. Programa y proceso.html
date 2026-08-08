@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03. Programa y proceso</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>03. Programa y proceso</h1>
+<p class="nota">La diferencia entre lo que está escrito y lo que está pasando.</p>
+
+<p>Antes vimos cómo el compilador toma nuestro código fuente y produce un ejecutable. Ese ejecutable,
+guardado en el disco, es un <b>programa</b>. Pero un programa guardado, por más completo que esté, no
+hace nada por sí solo: es apenas una descripción. Recién cuando lo ponés a andar empieza a ocurrir
+algo, y a eso que ocurre lo llamamos <b>proceso</b>. Aunque en el día a día usemos las dos palabras
+como sinónimos, conviene separarlas.</p>
+
+<h2>El programa</h2>
+
+<p>Un <b>programa</b> es una entidad <b>estática</b>: el conjunto de instrucciones y datos que
+describen qué hay que hacer, tal como quedaron escritos. Es el ejecutable que vive en el disco, quieto,
+esperando. No consume tiempo de procesador ni ocupa la memoria de trabajo; simplemente <b>está</b>.
+Es un plan, no una acción.</p>
+
+<h2>El proceso</h2>
+
+<p>Un <b>proceso</b> es un <b>programa en ejecución</b>: una entidad <b>dinámica</b>, viva. Cuando le
+pedís al sistema operativo que corra un programa, éste lo carga en la memoria de trabajo y le da
+tiempo de procesador para que sus instrucciones se vayan ejecutando una tras otra.</p>
+
+<p>A diferencia del programa, el proceso tiene un <b>estado</b> que cambia todo el tiempo: por qué
+instrucción va, qué datos maneja en ese momento, qué memoria está usando, qué recursos
+tiene abiertos. De administrar todo eso —repartir el procesador y la memoria entre los procesos que
+conviven— se encarga el sistema operativo.</p>
+
+<h2>Un programa, muchos procesos</h2>
+
+<p>La distinción se ve clarísima con una imagen que ya usamos: la <b>receta</b> de cocina. La receta
+escrita es el programa; <b>cocinarla</b> es el proceso. La misma receta puede cocinarse muchas veces,
+y hasta al mismo tiempo en cocinas distintas: cada cocinero va por un paso diferente, con sus propios
+ingredientes sobre la mesada. Una sola receta, varias cocinas en marcha.</p>
+
+<p>Con los programas pasa igual: de un mismo programa pueden nacer <b>varios procesos</b> a la vez, y
+cada uno es independiente, con su propio estado. Si abrís dos ventanas del mismo navegador, hay un
+solo programa en el disco pero dos procesos ejecutándose, cada uno en lo suyo.</p>
+
+<p>Vale la pena tener presente esta diferencia: cuando diseñamos un algoritmo estamos escribiendo el
+<b>programa</b>, la descripción quieta; pero lo que finalmente resuelve el problema es el
+<b>proceso</b>, esa descripción puesta en movimiento por la máquina.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="04.%20S%C3%ADmbolos%20y%20variables.html">Siguiente: Símbolos y variables →</a>
+</div>
+
+</body>
+</html>

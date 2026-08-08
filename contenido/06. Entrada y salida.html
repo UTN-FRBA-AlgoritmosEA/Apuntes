@@ -1,0 +1,151 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06. Entrada y salida</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>06. Entrada y salida</h1>
+<p class="nota">Cómo un programa recibe datos y muestra resultados.</p>
+
+<p>Un algoritmo que solo hace cuentas para adentro no sirve de mucho: en algún momento tiene que
+<b>recibir datos</b> del exterior y <b>comunicar sus resultados</b>. Para eso están las dos
+instrucciones que vemos acá: <b>leer</b> y <b>escribir</b>.</p>
+
+<p>Hay muchas formas en que un programa puede interactuar con quien lo usa —ventanas, botones,
+gráficos, sonido—, pero en esta materia nos vamos a limitar a la más básica: la <b>consola</b>.
+Nuestros programas van a ser <b>programas de consola</b>, donde todo pasa por una secuencia de texto en
+la pantalla: el usuario puede ver lo que nosotros le escribimos y puede escribirnos lo que le
+pidamos.</p>
+
+<h2>Leer y escribir</h2>
+
+<p><b>Leer</b> toma un dato de la <b>entrada</b> —típicamente, lo que la persona teclea— y lo guarda en
+una variable. <b>Escribir</b> manda un valor a la <b>salida</b> —típicamente, la pantalla—. Este
+algoritmo lee una edad y la vuelve a mostrar:</p>
+
+<script>Diagrama`
+  leer edad
+  escribir edad
+`</script>
+
+<p>En el diagrama cada una tiene su forma propia, pero la idea es simple: una trae información hacia el
+programa y la otra la saca. Cada una es, otra vez, un paso más del algoritmo.</p>
+
+<p>Si queremos pedir o mostrar <b>más de un dato</b>, simplemente los separamos con <b>coma</b>. Y en la
+salida podemos intercalar <b>literales</b> —un texto fijo, por ejemplo— junto con los valores, para que
+lo que mostramos se entienda mejor:</p>
+
+<script>Diagrama`
+  leer nombre, edad
+  escribir "la edad es", edad
+`</script>
+
+<h2>Traduciendo a código</h2>
+
+<p>Acá empiezan las discrepancias más fuertes entre el diagrama y el código. El diagrama nos deja ver
+un contexto —qué significa cada dato, qué estamos pidiendo— que la persona que usa el programa no llega
+a ver; y, encima, estas operaciones son bastante complejas del lado del código.</p>
+
+<p>C trae las funciones básicas <code>printf</code> y <code>scanf</code>, que permiten escribir e
+interpretar texto, pero requieren un formato específico que puede ser algo complejo. Por eso acá vamos a
+usar las herramientas que nos provee C++.</p>
+
+<p>En C++ tenemos dos <b>flujos de datos</b> (los veremos en detalle mucho más adelante) que nos
+permiten escribir y leer: <code>cout</code> (<i>console-out</i>, la salida estándar) y <code>cin</code>
+(<i>console-in</i>, la entrada estándar). Los operadores <code>&lt;&lt;</code> y <code>&gt;&gt;</code>
+permiten enviar datos a uno y recibir datos del otro.</p>
+
+<p>Veamos la <b>salida</b>. Este diagrama, que muestra un texto fijo y un valor…</p>
+
+<script>Diagrama`
+  escribir "la edad es", edad
+`</script>
+
+<p>…se traduce mandando esos mismos datos a <code>cout</code>. Cada coma del diagrama se vuelve un
+<code>&lt;&lt;</code>:</p>
+
+<script>Código`
+cout << "la edad es " << edad;
+`</script>
+
+<p>Y la <b>entrada</b>. Este <code>leer</code>…</p>
+
+<script>Diagrama`
+  leer edad
+`</script>
+
+<p>…se traduce trayendo el dato desde <code>cin</code> hacia la variable:</p>
+
+<script>Código`
+cin >> edad;
+`</script>
+
+<p>Pero acá hay una diferencia importante. Cuando en el diagrama leemos…</p>
+
+<script>Diagrama`
+  leer edad
+`</script>
+
+<p>…entendemos por el contexto que se está pidiendo la edad; en cambio, la persona que ejecuta el
+programa solo ve el <b>cursor titilando</b>, esperando que escriba algo, sin ninguna pista de qué. Por
+eso, antes de pedir un dato conviene <b>avisar qué esperamos</b>. Así, aquel diagrama, en el código,
+por lo general implica dos instrucciones:</p>
+
+<script>Código`
+cout << "Ingrese la edad: ";
+cin >> edad;
+`</script>
+
+<p>Un detalle práctico: <code>endl</code> es nuestro amigo para <b>bajar a la línea siguiente</b>.
+Mandándolo a <code>cout</code> cortamos el renglón, y así el texto que ve el usuario queda más ordenado
+y se entiende mejor. Tanto <code>&lt;&lt;</code> como <code>&gt;&gt;</code> se pueden <b>encadenar</b>
+—varios datos en una misma instrucción—, como acá:</p>
+
+<script>Código`
+cout << "la edad es " << edad << endl;
+`</script>
+
+<p>Ahora bien, difícilmente encadenemos <code>&gt;&gt;</code>: como el usuario necesita saber qué le
+estamos pidiendo en cada caso, conviene leer de a un dato, avisando antes cada uno.</p>
+
+<p>Otra comodidad: <code>cin</code> y <code>cout</code> se encargan solos de las <b>conversiones</b>
+necesarias entre el texto (lo que se teclea o se ve en pantalla) y el tipo de dato que estamos leyendo
+o mostrando. También hay maneras de <b>formatear</b> la salida —por ejemplo, con cuántos decimales
+mostrar un número—, pero eso lo dejamos para cuando haga falta. Podés consultar la referencia de
+<a href="https://en.cppreference.com/w/cpp/io/cout" target="_blank" rel="noopener">cout</a>,
+<a href="https://en.cppreference.com/w/cpp/io/cin" target="_blank" rel="noopener">cin</a> y sus
+operadores, y los
+<a href="https://en.cppreference.com/w/cpp/io/manip" target="_blank" rel="noopener">manipuladores de
+formato</a>, en cppreference.com.</p>
+
+<p>Ahora, una advertencia: si el dato que ingresa el usuario <b>no se corresponde</b> con el que
+esperábamos —por ejemplo, escribe letras cuando pedíamos un número—, pueden aparecer errores. En un
+programa «de verdad» esos casos hay que <b>contemplarlos</b> sí o sí; pero como todavía estamos en una
+etapa de aprendizaje, por ahora vamos a asumir que el usuario no comete errores y siempre ingresa bien
+lo que le pedimos.</p>
+
+<p>Para redondear: en los <b>diagramas</b> podemos omitir presentar lo que se infiere por el contexto
+—si muestro una variable llamada <code>edad</code>, se entiende que estoy mostrando una edad—; pero en
+el <b>código</b> tenemos que ser mucho más explícitos, porque el usuario no comparte ese contexto y
+solo ve el texto que le mandamos.</p>
+
+<p>Ya tenemos las instrucciones básicas —asignación, entrada y salida—. Lo que viene es cómo
+<b>combinarlas y ordenar su ejecución</b>: las <b>estructuras de control</b>, que empezamos a ver en el
+próximo tema.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="07.%20Secuencia.html">Siguiente: Secuencia →</a>
+</div>
+
+</body>
+</html>

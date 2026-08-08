@@ -1,0 +1,121 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>05. Instrucciones, asignaciones y expresiones</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>05. Instrucciones, asignaciones y expresiones</h1>
+<p class="nota">Las órdenes que forman un algoritmo, y la más básica de todas.</p>
+
+<p>Ya sabemos ponerles nombre a los datos con los que trabajamos. Ahora falta lo principal: decir
+<b>qué hacer</b> con ellos. Esas órdenes son las <b>instrucciones</b>.</p>
+
+<h2>Qué es una instrucción</h2>
+
+<p>Una <b>instrucción</b> es una orden que le da un paso al algoritmo: hacé <i>esto</i>. Un programa
+es, en el fondo, un montón de instrucciones que la máquina va ejecutando, una tras otra. Hay
+instrucciones de varios tipos; en este tema arrancamos por la más básica y frecuente, y más adelante
+sumamos las demás.</p>
+
+<h2>La asignación</h2>
+
+<p>La <b>asignación</b> es la instrucción más básica: guardar un valor en una variable. Ya la nombramos
+al hablar de variables. En el lenguaje de diagramas se dibuja como un recuadro con una flecha que
+apunta a la variable.</p>
+
+<script>Diagrama`
+  contador := 0
+  contador := contador + 1
+`</script>
+
+<p>La segunda asignación conviene mirarla con cuidado, porque más de uno se marea la primera vez. No es
+una ecuación matemática (no dice que <code>contador</code> sea igual a <code>contador + 1</code>, lo
+cual sería imposible): es una orden. Se lee «<i>calculá <code>contador + 1</code> y guardá el
+resultado de nuevo en <code>contador</code></i>». Primero se mira el valor actual del lado derecho y
+recién después se reemplaza; por eso la flecha apunta hacia la variable, marcando hacia dónde va el
+resultado.</p>
+
+<p>Como se ve en el dibujo, una asignación tiene <b>dos partes</b>: la <b>parte izquierda</b> (adonde
+señala la flecha) y la <b>parte derecha</b> (el origen de la flecha). Cada una está formada por una
+<b>expresión</b>. La diferencia es que la parte izquierda tiene que ser una <b>expresión asignable</b>:
+algún lugar donde se pueda guardar un valor. Por ahora, el único lugar así que conocemos es una
+<b>variable</b>, pero a medida que avancemos en la materia vamos a ver expresiones más complejas de
+este lado.</p>
+
+<p>En C/C++, la asignación se escribe con el signo <code>=</code>: a la izquierda la variable y a la
+derecha la expresión.</p>
+
+<script>Código`
+variable = expresión;
+`</script>
+
+<p>Cuidado con esto: en C, <code>=</code> es el <b>operador de asignación</b>, no una comparación ni
+una ecuación. <code>edad = 20</code> quiere decir «guardá 20 en <code>edad</code>», lo mismo que la
+flecha del diagrama. (Para preguntar si dos valores son iguales, C usa otro símbolo, <code>==</code>,
+que veremos más adelante.)</p>
+
+<p>Un caso muy frecuente es <b>acumular</b>: tomar una variable, combinarla con algo y volver a guardar
+el resultado en ella misma. Como ahí la parte izquierda se repite en la derecha
+(<code>contador ⇽ contador + 1</code>), podemos usar los operadores <code>+=</code> y <code>-=</code>
+de C para no escribirla dos veces:</p>
+
+<script>Diagrama`
+  contador += 1
+  saldo -= gasto
+`</script>
+
+<p><code>contador += 1</code> es una forma corta de <code>contador ⇽ contador + 1</code>, y
+<code>saldo -= gasto</code>, de <code>saldo ⇽ saldo - gasto</code>. En C/C++ funcionan igual:</p>
+
+<script>Código`
+contador += 1;   // equivale a  contador = contador + 1;
+saldo -= gasto;  // equivale a  saldo = saldo - gasto;
+`</script>
+
+<h2>Expresiones</h2>
+
+<p>Venimos usando la palabra <b>expresión</b>; vale la pena precisarla. Una <b>expresión</b> es
+cualquier combinación de valores, variables y operadores que, al <b>evaluarse</b>, produce un
+<b>único valor</b>. Sus ingredientes son:</p>
+
+<ul>
+  <li><b>literales, variables, constantes y otros símbolos</b>, que aportan un valor (ya los vimos);</li>
+  <li><b>operadores</b> que los combinan: aritméticos (<code>+</code>, <code>-</code>, <code>*</code>,
+  <code>/</code>), de comparación (<code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>,
+  <code>&lt;=</code>, <code>==</code> para «igual» y <code>!=</code> para «distinto») y lógicos
+  (<code>&amp;&amp;</code> para «y», <code>||</code> para «o», <code>!</code> para «no»);</li>
+  <li><b>paréntesis</b> para agrupar y dejar en claro el orden en que se resuelve.</li>
+</ul>
+
+<p>Lo importante es que toda expresión, por más larga que sea, termina reduciéndose a <b>un solo
+valor</b>. Por ejemplo, <code>base * altura / 2</code> se reduce a un número, y <code>edad &gt;= 18</code>
+se reduce a un valor lógico (verdadero o falso).</p>
+
+<p>Ese valor único es lo que la parte derecha de una asignación guarda en la variable. Y, como veremos,
+también es lo que miran la decisión y la repetición para elegir por dónde seguir.</p>
+
+<p>Una aclaración sobre la notación: en los diagramas usamos los <b>mismos operadores que C</b> —por
+ejemplo <code>*</code> para multiplicar, <code>==</code> para comparar por igual, y
+<code>&amp;&amp;</code> / <code>||</code> / <code>!</code> para los lógicos—. Algunas cosas puntuales
+las vamos a simplificar por practicidad, pero eso lo iremos aclarando caso por caso cuando aparezcan.</p>
+
+<p>Con la asignación y las expresiones ya podemos hacer cálculos, pero todavía nos falta algo básico:
+comunicarnos con el mundo, es decir, leer datos y mostrar resultados. Esas instrucciones de
+<b>entrada y salida</b> las vemos en el próximo tema.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="06.%20Entrada%20y%20salida.html">Siguiente: Entrada y salida →</a>
+</div>
+
+</body>
+</html>

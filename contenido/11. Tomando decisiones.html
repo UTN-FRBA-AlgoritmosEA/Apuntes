@@ -1,0 +1,191 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11. Tomando decisiones</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>11. Tomando decisiones</h1>
+<p class="nota">Primer ejercicio.</p>
+
+<p>Ya tenemos las piezas necesarias —variables, expresiones, entrada y salida, secuencia y decisión—
+para resolver un problema de punta a punta. Vamos a hacerlo siguiendo siempre el mismo camino:
+<b>plantear</b> el enunciado, <b>pensarlo</b>, <b>dibujarlo</b> y recién al final <b>traducirlo</b> a
+C++.</p>
+
+<h2>El enunciado</h2>
+
+<blockquote>Dada la capacidad de un aula y la cantidad de alumnos, mostrar cuántos asientos sobran o
+faltan.</blockquote>
+
+<h2>Análisis</h2>
+
+<p>Necesitamos dos datos de entrada: la <b>capacidad</b> del aula y la <b>cantidad de alumnos</b>,
+ambos enteros. Con esos dos números alcanza para calcular la <b>diferencia</b> entre ellos
+(<code>capacidad - alumnos</code>), y esa diferencia nos dice todo lo que hace falta:</p>
+
+<ul>
+  <li>si es <b>positiva</b>, sobran esa cantidad de asientos;</li>
+  <li>si es <b>negativa</b>, faltan asientos —lo opuesto de esa diferencia—;</li>
+  <li>si es <b>cero</b>, no sobran ni faltan: entran justo.</li>
+</ul>
+
+<p>Otra vez son <b>tres</b> caminos, y ya sabemos cómo resolver eso: encadenando dos decisiones, igual
+que en el ejemplo de la nota.</p>
+
+<h2>La solución</h2>
+
+<p>Habiendo identificado las variables y el comportamiento, procedemos a describir el algoritmo. </p>
+<p>Si bien nos vamos a centrar en los diagramas, a partir de ahora vas a poder alternar entre el
+<b>diagrama</b> y su traducción a <b>C++</b> con las pestañas de arriba:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+  programaprincipal {
+    locales {
+      int capacidad
+      int alumnos
+      int diferencia
+    }
+    leer capacidad, alumnos
+    diferencia := capacidad - alumnos
+    si diferencia > 0 {
+      escribir "sobran ",~~diferencia,~~" asientos"
+    } sino {
+      si diferencia < 0 {
+        escribir "faltan ",~~-diferencia,~~" asientos"
+      } sino {
+        escribir "entran justito"
+      }
+    }
+  }
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+#include <iostream>
+using namespace std;
+
+int main() {
+    int capacidad;
+    int alumnos;
+    int diferencia;
+
+    cout << "Ingrese la capacidad del aula: ";
+    cin >> capacidad;
+    cout << "Ingrese la cantidad de alumnos: ";
+    cin >> alumnos;
+
+    diferencia = capacidad - alumnos;
+
+    if (diferencia > 0) {
+        cout << "sobran " << diferencia << " asientos" << endl;
+    } else if (diferencia < 0) {
+        cout << "faltan " << -diferencia << " asientos" << endl;
+    } else {
+        cout << "entran justito" << endl;
+    }
+
+    return 0;
+}
+`</script>
+  </div>
+</div>
+
+<h2>Validación</h2>
+
+<p>Como un mismo programa se comporta distinto según los datos que reciba vamos a crear tres
+conjuntos de datos para probar los tres caminos posibles sobre el mismo diagrama:</p>
+
+<script>Reproductor(`
+  programaprincipal {
+    locales {
+      int capacidad
+      int alumnos
+      int diferencia
+    }
+    leer ≤01capacidad≥, ≤02alumnos≥
+    ≤03diferencia≥ := ≤03capacidad - alumnos≥
+    si ≤04diferencia > 0≥ {
+      escribir ≤05"sobran ",~~diferencia,~~" asientos"≥
+    } sino {
+      si ≤06diferencia < 0≥ {
+        escribir ≤07"faltan ",~~-diferencia,~~" asientos"≥
+      } sino {
+        escribir ≤08"entran justito"≥
+      }
+    }
+  }
+`, {
+  "sobran asientos": [
+    { expresiones:{ "capacidad":{}, "alumnos":{}, "diferencia":{} } },
+    { zona:1, salida:"Ingrese la capacidad del aula: " },
+    { zona:1, expresiones:{ "capacidad":40 }, salida:"40\n" },
+    { zona:2, salida:"Ingrese la cantidad de alumnos: " },
+    { zona:2, expresiones:{ "alumnos":25 }, salida:"25\n" },
+    { zona:3, expresiones:{ "diferencia":15 } },
+    { zona:4 },
+    { zona:5, salida:"sobran 15 asientos\n" },
+    { zona:"F" }
+  ],
+  "faltan asientos": [
+    { expresiones:{ "capacidad":{}, "alumnos":{}, "diferencia":{} } },
+    { zona:1, salida:"Ingrese la capacidad del aula: " },
+    { zona:1, expresiones:{ "capacidad":30 }, salida:"30\n" },
+    { zona:2, salida:"Ingrese la cantidad de alumnos: " },
+    { zona:2, expresiones:{ "alumnos":42 }, salida:"42\n" },
+    { zona:3, expresiones:{ "diferencia":-12 } },
+    { zona:4 },
+    { zona:6 },
+    { zona:7, salida:"faltan 12 asientos\n" },
+    { zona:"F" }
+  ],
+  "entran justo": [
+    { expresiones:{ "capacidad":{}, "alumnos":{}, "diferencia":{} } },
+    { zona:1, salida:"Ingrese la capacidad del aula: " },
+    { zona:1, expresiones:{ "capacidad":30 }, salida:"30\n" },
+    { zona:2, salida:"Ingrese la cantidad de alumnos: " },
+    { zona:2, expresiones:{ "alumnos":30 }, salida:"30\n" },
+    { zona:3, expresiones:{ "diferencia":0 } },
+    { zona:4 },
+    { zona:6 },
+    { zona:8, salida:"entran justito\n" },
+    { zona:"F" }
+  ]
+}, { consola:{ lineas:4 } })</script>
+
+<p>El diagrama y el código son <b>los mismos</b> en los tres casos; lo único que cambia son los datos
+que entran, y eso alcanza para que el programa recorra un camino distinto cada vez. Por eso conviene
+probar un algoritmo con <b>varios</b> datos, al menos uno por cada camino.</p>
+
+<p>Y entre todos, hay unos que son <b>especialmente importante</b> validar: los llamados <b>casos de borde</b>
+(o casos límite). Son los valores que caen justo en la <b>frontera</b> entre un comportamiento y otro,
+donde una condición pasa de cumplirse a no cumplirse. En nuestro ejemplo ese caso es cuando la
+diferencia vale exactamente <b>0</b>: la línea que separa «sobran» de «faltan».</p>
+
+<p>Muchas veces los casos de borde <b>no están a la vista</b> en el problema que queremos resolver: es
+responsabilidad nuestra encontrarlos y resolverlos. Fijate que acá el enunciado solo pedía
+«mostrar cuántos asientos sobran o faltan», sin mencionar qué pasa cuando son iguales la capacidad y la
+cantidad de alumnos. Recién durante el <b>análisis</b> apareció ese tercer caso. Si no lo hubiéramos
+encontrado, el programa habría quedado incompleto o erróneo.</p>
+
+<p>¿Por qué importan tanto? Porque es justo ahí donde se esconden los errores más comunes. Con datos
+«del medio» —una diferencia claramente positiva o claramente negativa— casi cualquier versión del
+programa funciona. Pero un desliz chico, como escribir <code>&gt;=</code> donde iba <code>&gt;</code>,
+solo se nota en el borde: si hubiéramos puesto <code>diferencia &gt;= 0</code>, el caso del 0 diría por
+error «sobran 0 asientos» en vez de «entran justito». Probar el borde es lo que trae a la superficie esa
+clase de errores; los valores del medio casi nunca los muestran.</p>
+
+<hr>
+<p class="nota"><a class="volver" href="../index.html">← Índice</a></p>
+
+</body>
+</html>

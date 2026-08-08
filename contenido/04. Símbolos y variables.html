@@ -1,0 +1,177 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04. Símbolos y variables</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>04. Símbolos y variables</h1>
+<p class="nota">Cómo le ponemos nombre a las piezas de un programa, y los dos primeros nombres que usaremos.</p>
+
+<p>Antes dijimos que un proceso maneja datos que cambian a cada instante. Para poder trabajar con esos
+datos —leerlos, combinarlos, cambiarlos— primero necesitamos <b>nombrarlos</b>. Y no solo a los datos:
+a lo largo de un programa les vamos poniendo nombre a muchas cosas. Cada uno de esos nombres es un
+<b>símbolo</b>.</p>
+
+<h2>Qué es un símbolo</h2>
+
+<p>Un <b>símbolo</b> es un <b>nombre</b> que usamos para referirnos a algo dentro del programa. En
+lugar de andar con direcciones de memoria o con valores sueltos, les damos un nombre y los manejamos a
+través de él. Los símbolos son, en el fondo, la forma en que las personas nombramos las piezas con las
+que está hecho un programa.</p>
+
+<p>Hay <b>distintos tipos de símbolos</b> —empezando por las <b>variables</b> y las <b>constantes</b>
+que vemos en este tema—, y los vamos a ir conociendo a lo largo de la materia. Pero hay algo que vale
+para todos por igual: las reglas para ponerles nombre.</p>
+
+<h2>Reglas para los nombres</h2>
+
+<p>Cada lenguaje tiene sus propias reglas sobre qué nombres son válidos para un símbolo, y nosotros nos
+vamos a regir por las de <b>C</b>. Dicho de manera simple, un nombre válido en C:</p>
+
+<ul>
+  <li>se forma con <b>letras</b>, <b>dígitos</b> y el <b>guión bajo</b> (<code>_</code>);</li>
+  <li><b>no puede empezar con un dígito</b>: arranca siempre con una letra o con un guión bajo;</li>
+  <li>no lleva <b>espacios</b> ni otros signos (nada de <code>+</code>, <code>-</code>, puntos, etc.);</li>
+  <li>distingue <b>mayúsculas de minúsculas</b>: <code>edad</code>, <code>Edad</code> y <code>EDAD</code>
+  son tres nombres distintos;</li>
+  <li>no puede ser una <b>palabra reservada</b> del lenguaje (como <code>int</code>, <code>if</code> o
+  <code>return</code>), porque esas ya tienen un significado propio.</li>
+</ul>
+
+<p>Más allá de lo que obliga la regla, conviene elegir nombres que digan <i>qué</i> representan:
+<code>edad</code> se entiende mucho mejor que <code>e</code>.</p>
+
+<h2>Variables</h2>
+
+<p>Una <b>variable</b> es un símbolo que nombra un espacio en la memoria donde el programa guarda un
+dato. Lo importante del nombre es que nos evita pensar en <i>dónde</i> está ese dato dentro de la
+memoria: en vez de andar con direcciones, la llamamos por su nombre y listo.</p>
+
+<p>Una imagen que suele ayudar es la de una <b>caja con etiqueta</b>. La etiqueta es el nombre; adentro
+está el valor guardado. Podés mirar qué hay en la caja (leerla) y podés reemplazar su contenido por
+otro (escribirla). La caja es siempre la misma; lo que cambia es lo que tiene adentro.</p>
+
+<p>Se llaman «variables», justamente, porque su valor <b>puede variar</b> a lo largo de la ejecución.
+Ese cambio en el tiempo es, en el fondo, buena parte del «estado» del proceso del que hablamos antes.</p>
+
+<h2>Nombre, tipo y valor</h2>
+
+<p>En una variable conviven tres cosas:</p>
+
+<ul>
+  <li><b>Nombre</b>: cómo la llamamos para referirnos a ella (por ejemplo <code>edad</code>).</li>
+  <li><b>Tipo</b>: qué clase de dato guarda y, con eso, cuánto lugar ocupa. Puede ser cualquier tipo:
+  los elementales que maneja la computadora, los que nos proveen las bibliotecas de terceros o
+  cualquiera que diseñemos nosotros más adelante.</li>
+  <li><b>Valor</b>: el contenido concreto que tiene en este momento (por ejemplo <code>20</code>).</li>
+</ul>
+
+<p>El nombre y el tipo se fijan cuando <b>declaramos</b> la variable y no cambian; el valor, en cambio,
+puede ir cambiando durante la ejecución. Declarar es presentar la variable con la forma
+<code>TipoDeDato nombreDeLaVariable;</code>: primero el tipo, después el nombre y un punto y coma al
+final. Por practicidad, vamos a usar esta misma sintaxis también en los diagramas. En C/C++ se ve
+así:</p>
+
+<script>Código`
+int edad;      // una variable entera llamada edad
+int edad = 20; // se puede declarar y darle un valor inicial de una
+`</script>
+
+<p>Acá conviene una aclaración: no todos los lenguajes tratan al tipo con la misma firmeza. Hay
+lenguajes <b>fuertemente tipados</b>, en los que cada variable tiene un tipo fijo que se respeta a
+rajatabla, y lenguajes <b>débilmente tipados</b>, que permiten —en distintos grados— que una variable
+cambie de tipo durante la ejecución o que directamente no tenga un tipo asociado. Nosotros nos vamos a
+centrar en los <b>fuertemente tipados</b>: son los que obligan a pensar desde el arranque qué clase de
+dato guarda cada variable, algo muy sano mientras uno aprende. C/C++ es de esta familia.</p>
+
+<p>Una última convención, nuestra: para diferenciar a simple vista las variables de otros símbolos que
+veremos más adelante, vamos a nombrarlas empezando siempre con <b>minúscula</b>. Y cuando el nombre
+esté formado por varias palabras, preferimos <b>camelCase</b>, aunque <b>snake_case</b> también está
+bien. Son dos maneras muy usadas de unir varias palabras en un solo nombre:</p>
+
+<ul>
+  <li><b>camelCase</b>: se pegan las palabras sin espacios y cada una —salvo la primera— arranca con
+  mayúscula. Por ejemplo <code>cantidadDeAlumnos</code> o <code>edadPromedio</code>.</li>
+  <li><b>snake_case</b>: se escriben todas en minúscula y se separan con guión bajo. Por ejemplo
+  <code>cantidad_de_alumnos</code> o <code>edad_promedio</code>.</li>
+</ul>
+
+<h2>Constantes</h2>
+
+<p>La <b>constante</b> es el otro símbolo que vamos a usar seguido. Se parece mucho a una variable
+—también tiene nombre, tipo y valor—, pero con una diferencia clave: su valor se fija una sola vez y
+<b>no cambia</b> en toda la ejecución.</p>
+
+<p>Sirven para los datos que no tienen por qué cambiar: el número π, la cantidad máxima de elementos
+que aceptamos, un mensaje fijo. Ponerles un nombre, en vez de repetir el valor por todos lados, hace
+el programa más claro y más fácil de mantener. Y hay una ventaja extra: como el compilador sabe que
+una constante no debe cambiar, si por error intentamos modificarla, nos avisa.</p>
+
+<p>Igual que con las variables, adoptamos una convención de nombres para reconocerlas de un vistazo: a
+las constantes las escribimos <b>todo en mayúsculas</b>, usando <b>SNAKE_CASE</b> (palabras separadas
+por guión bajo). Por ejemplo <code>PI</code>, <code>CANTIDAD_MAXIMA</code> o
+<code>DIAS_POR_SEMANA</code>.</p>
+
+<p>En C/C++ hay dos maneras de definir una constante. La primera es anteponer <code>const</code> a una
+declaración normal y darle su valor:</p>
+
+<script>Código`
+const int CANTIDAD_MAXIMA = 100;
+`</script>
+
+<p>La segunda es con <code>#define</code>:</p>
+
+<script>Código`
+#define CANTIDAD_MAXIMA 100
+`</script>
+
+<p>Esto último se llama <b>macro</b>. No vamos a entrar en demasiado detalle, pero alcanza con saber
+que, básicamente, antes de compilar cada aparición de <code>CANTIDAD_MAXIMA</code> en el código se
+reemplaza por el valor escrito ahí (<code>100</code>). Las macros tienen otros usos, pero eso excede
+este apartado.</p>
+
+<h2>Literales</h2>
+
+<p>Muy relacionados con las constantes están los <b>literales</b>: son también valores constantes,
+pero <b>sin nombre</b>. Cada vez que escribimos un valor directamente en el código —el <code>20</code>
+de <code>edad = 20</code>, o el <code>100</code> de recién— estamos usando un literal. Siempre
+representa el mismo valor: el <code>20</code> escrito en el código vale 20 y no va a cambiar nunca; por
+eso decimos que es una constante sin nombre.</p>
+
+<p>A grandes rasgos, los tipos de literales más comunes son:</p>
+
+<ul>
+  <li><b>enteros</b>: números sin parte decimal, como <code>0</code>, <code>42</code> o
+  <code>-7</code>;</li>
+  <li><b>reales</b> (o de punto flotante): con parte decimal, como <code>3.14</code> o
+  <code>-0.5</code>;</li>
+  <li><b>caracteres</b>: un único símbolo entre comillas simples, como <code>'a'</code> o
+  <code>'?'</code>;</li>
+  <li><b>cadenas de texto</b>: una secuencia de caracteres entre comillas dobles, como
+  <code>"hola"</code>;</li>
+  <li><b>lógicos</b>: los dos valores de verdad, <code>verdadero</code> y <code>falso</code>.</li>
+</ul>
+
+<p>Ahora bien: llenar el código de literales que en realidad <b>deberían tener nombre</b> es una mala
+práctica. Cuando son números, se los suele llamar <b>números mágicos</b>, porque aparecen en el código
+de la nada, sin que nada explique qué significan. En los diagramas no nos preocupa demasiado —son un
+paso previo a programar—, pero en el código fuente conviene usar <b>constantes</b> siempre que podamos
+y tenga sentido. Ojo con eso último: no todo literal merece un nombre. No tiene ningún sentido escribir
+<code>contador += UNO</code>; ahí el <code>1</code> se entiende solo y usamos el literal directamente.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="05.%20Instrucciones,%20asignaciones%20y%20expresiones.html">Siguiente: Instrucciones, asignaciones y expresiones →</a>
+</div>
+
+</body>
+</html>

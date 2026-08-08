@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>07. Secuencia</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>07. Secuencia</h1>
+<p class="nota">Cómo se organiza la ejecución de las instrucciones, y la primera forma de hacerlo.</p>
+
+<h2>Las estructuras de control</h2>
+
+<p>Ya vimos qué son las instrucciones. Normalmente se ejecutan <b>una después de otra</b>, de arriba
+hacia abajo. Ese orden en que se van ejecutando se llama <b>flujo de control</b>. Las <b>estructuras de
+control</b> son las formas que tenemos de organizar ese flujo, y son apenas <b>tres</b>:</p>
+
+<ul>
+  <li><b>Secuencia</b>: hacer una cosa después de la otra.</li>
+  <li><b>Decisión</b>: elegir entre caminos según una condición.</li>
+  <li><b>Repetición</b>: repetir instrucciones varias veces.</li>
+</ul>
+
+<p>Puede sonar a poco, pero alcanza: se puede demostrar que <b>cualquier</b> algoritmo se arma
+combinando únicamente estas tres estructuras. Esa es, justamente, la idea de la <b>programación
+estructurada</b> —la que mencionamos al elegir C— y va a ser nuestra forma de trabajar de acá en más.
+Empecemos por la primera; la decisión y la repetición las vemos en los próximos temas.</p>
+
+<h2>La secuencia</h2>
+
+<p>La <b>secuencia</b> es la más simple: un paso tras otro, en orden. Se ejecuta la primera
+instrucción, después la segunda, y así hasta el final. Este algoritmo lee la base y la altura de un
+triángulo, calcula su área y la muestra:</p>
+
+<script>Diagrama`
+  leer base
+  leer altura
+  área := base * altura / 2
+  escribir área
+`</script>
+
+<p>No hay ningún misterio: el orden en que están escritas las instrucciones es el orden en que
+ocurren.</p>
+
+<h2>En código</h2>
+
+<p>En el código, lo que separa una instrucción de la siguiente es el <b>punto y coma</b>
+(<code>;</code>). Uno podría pensar que cada línea es una instrucción —y muchas veces coincide—, pero
+en realidad es el <code>;</code> el que marca dónde termina una y empieza la otra: podríamos poner
+varias en un mismo renglón, o repartir una sola en varios, y lo que manda siempre es el <code>;</code>.</p>
+
+<p>Y para agrupar varias instrucciones en una <b>secuencia</b> (un bloque), las encerramos entre llaves
+<code>{ }</code>. Nuestro diagrama de recién, llevado a código —declarando las variables, pidiendo y
+leyendo cada dato, calculando y mostrando el resultado con una descripción—, queda así:</p>
+
+<script>Código`
+{
+    float base, altura, área;
+
+    cout << "Ingrese la base: ";
+    cin >> base;
+
+    cout << "Ingrese la altura: ";
+    cin >> altura;
+
+    área = base * altura / 2;
+
+    cout << "El área del triángulo es " << área << endl;
+}
+`</script>
+
+<p>Esto todavía no es un programa completo, ya va a llegar. La secuencia es la estructura más simple y,
+además, la base sobre la que se apoyan las otras dos, que veremos a continuación.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="08.%20Decisi%C3%B3n.html">Siguiente: Decisión →</a>
+</div>
+
+</body>
+</html>

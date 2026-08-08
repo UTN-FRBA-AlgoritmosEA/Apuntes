@@ -1,0 +1,124 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>09. Repetición</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>09. Repetición</h1>
+<p class="nota">Repetir instrucciones sin escribirlas una y otra vez.</p>
+
+<p>La <b>repetición</b> —también llamada <b>iteración</b> o ciclo— es la tercera estructura de control.
+Nos deja repetir un conjunto de instrucciones varias veces, sin tener que escribirlas una y otra
+vez.</p>
+
+<h2>Repetición indefinida (o «mientras»)</h2>
+
+<p>La forma más general es la <b>repetición indefinida</b> (o «<b>mientras</b>»): repite el cuerpo
+<i>mientras</i> una condición siga siendo verdadera, y la evalúa antes de cada vuelta. Se la llama
+«indefinida» porque no sabemos de antemano cuántas vueltas va a dar. Este ciclo escribe los números del
+1 al 10:</p>
+
+<script>Diagrama`
+  i := 1
+  mientras i <= 10 {
+    escribir i
+    i := i + 1
+  }
+`</script>
+
+<p>Fijate el detalle: dentro del cuerpo hay una instrucción que hace <b>avanzar</b> la variable
+(<code>i ⇽ i + 1</code>). Si nos olvidáramos de ella, la condición nunca dejaría de cumplirse y el
+ciclo no terminaría más. Cada repetición tiene que acercarnos al final.</p>
+
+<p>En C/C++ se escribe con <code>while</code>:</p>
+
+<script>Código`
+while (condición) {
+    // cuerpo que se repite mientras la condición sea verdadera
+}
+`</script>
+
+<p>El detalle más importante de una repetición indefinida es este: la <b>condición tiene que ser
+susceptible de cambiar</b> dentro de la iteración. Es decir, lo que sea que pongamos como condición
+tiene que poder cambiar como consecuencia de lo que ocurre dentro del ciclo. Si no fuera así, la
+condición daría siempre el mismo valor de verdad y —según el caso— el ciclo no arrancaría nunca o no terminaría
+jamás.</p>
+
+<h2>Repetición definida</h2>
+
+<p>Cuando sabemos de antemano <b>cuántas veces</b> queremos repetir, conviene la <b>repetición
+definida</b>, que lleva la cuenta sola. El mismo recorrido del 1 al 10 se escribe así:</p>
+
+<script>Diagrama`
+  para i de 1 a 10 {
+    escribir i
+  }
+`</script>
+
+<p>Esto significa que el cuerpo se va a iterar con la variable <code>i</code> tomando todos los valores
+entre 1 y 10, inclusive.</p>
+
+<p>En C/C++ se escribe con <code>for</code>, que reúne en un solo lugar el arranque del contador, la
+condición y el avance:</p>
+
+<script>Código`
+for (inicialización; condición; avance) {
+    // cuerpo que se repite
+}
+`</script>
+
+<p>Volviendo a nuestro ejemplo del 1 al 10, con un <code>for</code> queda así:</p>
+
+<script>Código`
+for (int i = 1; i <= 10; i += 1) {
+    cout << i << endl;
+}
+`</script>
+
+<p>Por la forma del diagrama del <code>para</code>, el círculo del contador puede quedar incómodo para
+nombres de variable largos. Para esos casos podemos usar el mismo diagrama que en la repetición
+indefinida (el del <i>mientras</i>), siempre y cuando en la parte de la condición pongamos las mismas
+tres cosas que pide el <code>for</code>: la inicialización, la condición y el avance. El ejemplo de
+recién se vería así:</p>
+
+<script>Diagrama`
+  mientras i ⇽ 1; i <= 10; i += 1 {
+    escribir i
+  }
+`</script>
+
+<p>Un caso muy frecuente es recorrer <b>de 0 a n - 1</b> en lugar de 1 a n —por ejemplo, para pasar por
+todas las posiciones de un arreglo—. Ahí la condición suele escribirse <code>i &lt; n</code>, que es
+más simple y clara que <code>i &lt;= n - 1</code> (aunque signifiquen lo mismo):</p>
+
+<script>Código`
+for (int i = 0; i < n; i += 1) {
+    // cuerpo que se repite
+}
+`</script>
+
+<p>Un último apunte: para avanzar de a uno, C/C++ ofrece también el operador <code>++</code> (por
+ejemplo, <code>i++</code>), que hace lo mismo que <code>i += 1</code>. Es muy común verlo en código
+ajeno, así que conviene reconocerlo; pero nosotros vamos a preferir <code>i += 1</code>, porque
+transmite más claramente lo que está pasando: le estamos sumando 1 a <code>i</code>.</p>
+
+<p>Con estas tres estructuras —secuencia, decisión y repetición— y las instrucciones básicas ya
+tenemos todo lo necesario para construir cualquier algoritmo. De acá en adelante, diseñar va a ser,
+en buena medida, combinar estas piezas.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="10.%20Hola%20programa%20principal.html">Siguiente: Hola programa principal →</a>
+</div>
+
+</body>
+</html>

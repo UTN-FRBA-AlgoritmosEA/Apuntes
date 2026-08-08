@@ -1,0 +1,127 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>08. Decisión</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>08. Decisión</h1>
+<p class="nota">Elegir entre caminos según una condición.</p>
+
+<p>La <b>decisión</b> es la segunda estructura de control. Permite elegir entre dos caminos según se
+cumpla o no una <b>condición</b>. Se evalúa la condición: si es <b>verdadera</b> se toma una rama, y si
+es <b>falsa</b>, la otra. En los diagramas, el camino verdadero va a la izquierda y el falso a la
+derecha.</p>
+
+<script>Diagrama`
+  si edad >= 18 {
+    escribir "es mayor de edad"
+  } sino {
+    escribir "es menor de edad"
+  }
+`</script>
+
+<p>La rama del «si no» puede no existir: a veces solo queremos hacer algo cuando la condición se
+cumple, y no hacer nada en el otro caso. Después de la decisión, el flujo vuelve a juntarse y sigue
+la secuencia.</p>
+
+<h2>En C/C++</h2>
+
+<p>Al escribirla en C/C++, la decisión tiene esta forma:</p>
+
+<script>Código`
+if (condición) {
+    // qué hacer si la condición es verdadera
+} else {
+    // qué hacer si es falsa
+}
+`</script>
+
+<p>El <code>else</code> es <b>opcional</b>. Si solo hay algo que hacer cuando la condición se cumple,
+lo omitimos y no pasa nada:</p>
+
+<script>Código`
+if (condición) {
+    // qué hacer si la condición es verdadera
+}
+`</script>
+
+<p>La <b>condición</b> entre paréntesis es una <b>expresión lógica</b>: se evalúa a verdadero o falso,
+y según eso se toma una rama u otra. Ojo con un error clásico al escribir la condición: para comparar
+por igual se usa <code>==</code> (doble), no <code>=</code>, que —como vimos— es la asignación.</p>
+
+<p>Volviendo al ejemplo de la edad, la decisión completa —pidiendo el dato, leyéndolo y avisando el
+resultado— queda así:</p>
+
+<script>Código`
+int edad;
+
+cout << "Ingrese la edad: ";
+cin >> edad;
+
+if (edad >= 18) {
+    cout << "es mayor de edad" << endl;
+} else {
+    cout << "es menor de edad" << endl;
+}
+`</script>
+
+<h2>Sobre las llaves</h2>
+
+<p>En C/C++, cuando una rama del <code>if</code> o del <code>else</code> tiene una sola instrucción,
+las llaves <code>{ }</code> son <b>opcionales</b>. Pero omitirlas hace el código más difícil de leer y
+es una fuente típica de errores, así que —por más que el lenguaje lo admita— nosotros las vamos a usar
+<b>SIEMPRE</b>.<b>(*)</b></p>
+
+<p><b>(*)</b> La única excepción es en el <code>else</code>, y solo para <b>encadenar dos decisiones
+seguidas</b>. Es tan común que tiene nombre propio: <code>else if</code>. Por ejemplo, para validar que
+una nota esté entre 0 y 10:</p>
+
+<script>Diagrama`
+  si nota < 0 {
+    escribir "nota inválida (menor que 0)"
+  } sino {
+    si nota > 10 {
+      escribir "nota inválida (mayor que 10)"
+    } sino {
+      escribir "nota válida"
+    }
+  }
+`</script>
+
+<p>En el diagrama, la segunda decisión va dentro del <i>si no</i> de la primera. En el código, como ese
+<code>else</code> contiene una sola instrucción (otro <code>if</code>), podemos omitir <b>sus</b> llaves
+y encadenar, quedando el clásico <code>if</code> / <code>else if</code> / <code>else</code>:</p>
+
+<script>Código`
+if (nota < 0) {
+    cout << "nota inválida (menor que 0)" << endl;
+} else if (nota > 10) {
+    cout << "nota inválida (mayor que 10)" << endl;
+} else {
+    cout << "nota válida" << endl;
+}
+`</script>
+
+<h2>Decisión múltiple: <code>switch</code></h2>
+
+<p>Para elegir entre muchos casos según el valor de una variable, C/C++ ofrece además el
+<code>switch</code>. Pueden usarlo si quieren, pero en los ejemplos nos vamos a quedar con la decisión
+simple (el <code>if</code>), porque todo lo que resuelve un <code>switch</code> se puede resolver igual
+con ella.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="09.%20Repetici%C3%B3n.html">Siguiente: Repetición →</a>
+</div>
+
+</body>
+</html>
