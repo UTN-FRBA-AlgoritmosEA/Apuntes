@@ -1,0 +1,196 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>12. Tipos de datos básicos</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>12. Tipos de datos básicos</h1>
+<p class="nota">Qué hay realmente detrás de un <code>int</code>, un <code>float</code> o un <code>bool</code>.</p>
+
+<p>Dijimos que el tipo de una variable "puede ser cualquier tipo: <b>los elementales que maneja la
+computadora</b>, los que nos proveen las bibliotecas de terceros o cualquiera que diseñemos nosotros
+más adelante". Nunca bajamos, sin embargo, a qué son esos tipos que la computadora ya entiende. Es
+hora de hacerlo.</p>
+
+<p>La memoria de un programa es, en el fondo, un montón de <b>bytes ordenados</b>, uno detrás del
+otro, sin ningún significado propio: un byte es apenas un número de 0 a 255. Para poder usarlos
+tenemos que <b>darle un sentido</b> a cada parte. Eso es justamente lo que hace el <b>tipo</b>: le
+dice a la máquina cómo interpretar esos bytes —cuántos agrupar, cómo leerlos— y qué operaciones
+tienen sentido sobre ellos.</p>
+
+<h2>Tipos fundamentales</h2>
+
+<p>Ya sabemos que podemos definir nuestros propios tipos, combinando otros más simples (lo vamos a
+ver más adelante). Pero antes de eso hace falta un punto de partida: los <b>tipos fundamentales</b>,
+los que el procesador entiende <b>directamente</b>, sin que nadie se los tenga que explicar. Son
+apenas cuatro:</p>
+
+<ul>
+  <li><b>números enteros</b>: sin parte decimal;</li>
+  <li><b>números de coma flotante</b>: con parte decimal;</li>
+  <li><b>lógicos</b>: verdadero o falso;</li>
+  <li><b>direcciones de memoria</b>: la ubicación de un dato dentro de la memoria.</li>
+</ul>
+
+<h2>Números enteros</h2>
+
+<p>Los enteros no son todos iguales: pueden ocupar <b>distinto tamaño</b> en memoria, y pueden tener
+—o no— <b>signo</b>. Cuanto más grande el tamaño, más rango de valores entra; y si un entero no
+necesita representar negativos, usar su versión <code>unsigned</code> (sin signo) duplica el rango
+positivo disponible, porque no hay que reservar nada para el signo.</p>
+
+<p>En C/C++ tenemos varios tipos enteros, cada uno con su tamaño:</p>
+
+<table class="tabla-tipos">
+  <thead>
+    <tr><th>Tipo</th><th>Tamaño típico</th><th>Rango con signo</th><th>Rango sin signo (<code>unsigned</code>)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>char</code></td><td>1 byte</td><td>-128 a 127</td><td>0 a 255</td></tr>
+    <tr><td><code>short int</code></td><td>2 bytes</td><td>-32.768 a 32.767</td><td>0 a 65.535</td></tr>
+    <tr><td><code>int</code></td><td>4 bytes</td><td>-2.147.483.648 a 2.147.483.647</td><td>0 a 4.294.967.295</td></tr>
+    <tr><td><code>long int</code></td><td>8 bytes</td><td>±9,22 × 10¹⁸ (aprox.)</td><td>0 a ~1,84 × 10¹⁹</td></tr>
+  </tbody>
+</table>
+
+<script>Código`
+char c;
+short int s;   // también se puede escribir simplemente "short"
+int i;
+long int l;    // también "long"
+
+unsigned int u;   // el mismo tamaño que int, pero sin negativos
+`</script>
+
+<p>Un detalle importante: estos tamaños son los <b>típicos</b> en la enorme mayoría de las
+computadoras actuales, pero el estándar de C no los <b>garantiza</b> al pie de la letra. Lo único
+que exige es un <b>orden</b> (<code>char</code> ≤ <code>short</code> ≤ <code>int</code> ≤
+<code>long</code>) y un tamaño <b>mínimo</b> para cada uno. Si en algún momento necesitás el tamaño
+exacto en tu computadora, existe el operador <code>sizeof</code>, que lo devuelve en bytes; lo vamos
+a usar más adelante, pero ya podés saber que existe.</p>
+
+<h2>Números de coma flotante</h2>
+
+<p>Sirven para representar números <b>con parte decimal</b>, y lo hacen con un rango enorme: pueden
+guardar números muy <b>grandes</b> o muy <b>pequeños</b>. Para lograrlo, se representan de forma
+parecida a la <b>notación científica</b>, pero en binario: en vez de guardar el número tal cual, se
+guardan tres partes —el <b>signo</b>, el <b>exponente</b> y la <b>mantisa</b>— y el valor final sale
+de combinarlas.</p>
+
+<p>Los dos tipos que vamos a usar son <code>float</code> (32 bits en total) y <code>double</code>
+(64 bits, el doble de precisión —de ahí el nombre—):</p>
+
+<script>Código`
+float f = 3.14f;
+double d = 3.14159265358979;
+`</script>
+
+<p>Esta forma de representarlos tiene un costo: son <b>imprecisos</b>. No todo número decimal se
+puede guardar exacto —por ejemplo, <code>0.1</code> no tiene una representación exacta en binario, y
+queda apenas redondeado—. Y hay algo más sutil todavía: si sumás un número <b>muy grande</b> con uno
+<b>muy chico</b>, el chico puede quedar por debajo de lo que la mantisa del grande es capaz de
+distinguir, y se <b>pierde por completo</b> del resultado. No es que redondee mal: directamente no
+entra. Por eso hay que tener cuidado al comparar o acumular valores de coma flotante.</p>
+
+<h2>Lógicos</h2>
+
+<p>Ya vimos que una condición como <code>edad &gt;= 18</code> se reduce a un valor <b>lógico</b>
+(verdadero o falso). Ese es su único propósito: representar el resultado de una comparación o de una
+condición.</p>
+
+<p>C, sin embargo, no tuvo tradicionalmente un tipo dedicado para esto: se usaba directamente
+<code>int</code>, con una convención simple —<code>0</code> es falso, y <b>cualquier valor distinto
+de <code>0</code></b> es verdadero—. C++ sí incorporó un tipo propio, <code>bool</code>, con sus
+valores <code>true</code> y <code>false</code>:</p>
+
+<script>Código`
+bool activo = true;
+`</script>
+
+<p>Pero por esa herencia de C, <code>bool</code> se sigue <b>convirtiendo implícitamente</b> hacia y
+desde enteros con la misma convención de siempre: <code>true</code> equivale a <code>1</code>,
+<code>false</code> a <code>0</code>, y cualquier entero no nulo se convierte solo a <code>true</code>.
+Como consecuencia, en C/C++ podés usar directamente un entero donde se espera una condición:</p>
+
+<script>Código`
+if (n) {
+    // válido: equivale a  if (n != 0)
+}
+`</script>
+
+<p>Lenguajes más modernos suelen ser más estrictos: distinguen los enteros de los booleanos como
+tipos <b>no intercambiables</b>, y no te dejan poner un entero directamente donde se espera un
+verdadero o falso.</p>
+
+<p>Una aclaración de notación, ya que los vamos a usar pronto: en los <b>diagramas</b> de este
+apunte vamos a escribir los valores lógicos como <code>SÍ</code> y <code>NO</code>. No es la única
+forma posible —<code>true</code>/<code>false</code>, <code>YES</code>/<code>NO</code>, hasta ✅/❎
+funcionarían igual de bien—: al fin y al cabo es un <b>diagrama</b>, no código, y alcanza con que se
+entienda. Elegimos <code>SÍ</code>/<code>NO</code> por legibilidad en español; en el código C/C++,
+como ya vimos, seguimos usando <code>true</code>/<code>false</code>.</p>
+
+<p>Y ya que estamos con lógicos, aprovechamos para presentar los <b>operadores lógicos</b>, que
+vamos a usar seguido de acá en más para combinar condiciones:</p>
+
+<ul>
+  <li><code>&amp;&amp;</code> (<i>y</i>): verdadero solo si <b>las dos</b> condiciones que combina
+  son verdaderas.</li>
+  <li><code>||</code> (<i>o</i>): verdadero si <b>al menos una</b> de las condiciones que combina es
+  verdadera.</li>
+  <li><code>!</code> (<i>no</i>): invierte un valor lógico —lo verdadero pasa a falso, y lo falso a
+  verdadero—.</li>
+</ul>
+
+<p>Por ejemplo, <code>edad &gt;= 18 &amp;&amp; tieneDni</code> pide que se cumplan las dos
+condiciones a la vez, y <code>!hayDatos</code> es exactamente lo opuesto de <code>hayDatos</code>.</p>
+
+<h2>Direcciones de memoria</h2>
+
+<p>El último tipo fundamental es la <b>dirección de memoria</b>: un número que indica <b>dónde</b>,
+dentro de la memoria, está guardado un dato. Ocupa el tamaño de la <b>palabra</b> del procesador —la
+cantidad de bits que maneja de una vez—, que hoy suele ser de 32 o 64 bits según la arquitectura.
+Todavía no tenemos las herramientas para usarlas; vamos a volver sobre ellas cuando veamos
+<b>punteros</b>, más adelante en la materia.</p>
+
+<h2>¿Y el texto?</h2>
+
+<p>Notá que en ningún momento apareció el texto entre los tipos fundamentales. Es porque el
+procesador <b>no maneja texto</b> como tal: representar texto es una construcción de <b>software</b>,
+no algo que la máquina entienda directamente.</p>
+
+<p>De hecho, <code>char</code> —que ya conocemos de la tabla de enteros— es, en el fondo, un tipo
+<b>entero</b>: el más chico de todos. Se llama "char" (por <i>character</i>, carácter) porque
+históricamente se usaba para representar un único carácter, mediante una tabla que asocia cada
+número con un carácter: la tabla <b>ASCII</b>. Con un byte alcanzaban 256 valores, suficientes para
+las letras, los dígitos y algunos símbolos del inglés.</p>
+
+<p>Hoy existen codificaciones más ricas, que necesitan más de un byte para representar ciertos
+caracteres (como letras con tilde, o símbolos de otros idiomas). La más extendida es <b>UTF-8</b>,
+que tanto C como C++ soportan.</p>
+
+<p>Un texto, entonces, no es más que una <b>secuencia de caracteres</b> puesta una detrás de otra. En
+C se representa con un arreglo de caracteres —<code>char[]</code> o <code>char *</code> (todavía no
+vimos qué es un arreglo; lo vemos más adelante)—. C++, en cambio, nos trae una abstracción mucho más
+cómoda para esto, que ya mencionamos de pasada: <code>string</code>.
+Por el momento nos alcanza con saber que podemos usar <code>string</code> para almacenar textos,
+excepto en algunos casos especiales que desarrollaremos oportunamente. En esos casos usaremos
+<code>char[TAMAÑO]</code> donde <code>TAMAÑO</code> representa el tamaño fijo en bytes de la cadena
+que, en condiciones normales, es el largo máximo de la cadena de texto más uno, es decir que si
+<code>TAMAÑO</code> es 32, la longitud máxima de la cadena es 31.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="13.%20Secuencias%20y%20acumuladores.html">Siguiente: Secuencias y acumuladores →</a>
+</div>
+
+</body>
+</html>

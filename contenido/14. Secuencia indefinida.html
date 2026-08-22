@@ -1,0 +1,327 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>14. Secuencia indefinida</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>14. Secuencia indefinida</h1>
+<p class="nota">Iterando sin saber cuántos elementos tenemos.</p>
+
+<p>En el ejercicio anterior sabíamos de entrada cuántos números íbamos a leer: el propio usuario nos
+lo decía con <i>n</i>, y eso nos alcanzaba para armar una repetición definida. Ahora vamos a resolver
+un problema parecido, pero sin ese dato: no sabemos de antemano cuántos elementos tiene la secuencia.</p>
+
+<h2>El enunciado</h2>
+
+<blockquote>Dada una secuencia indefinida de números positivos, mostrar el promedio.<br>
+La secuencia termina cuando se ingresa un número no positivo.</blockquote>
+
+<h2>Análisis</h2>
+
+<p>Acá no tenemos ningún <i>n</i> que nos diga cuándo parar. Si no sabemos de antemano cuántos
+elementos vamos a leer, necesitamos otra forma de reconocer <b>dónde termina</b> la secuencia. Esa
+condición de corte depende de cada problema —a veces es el final de un archivo, a veces una palabra
+clave—, pero acá, como es el usuario quien va tecleando los números, la forma más simple es
+acordar un <b>valor centinela</b>: un valor que, al aparecer, nos avisa que ya no van a venir más
+datos.</p>
+
+<p>El propio enunciado nos da ese centinela: la secuencia es de números <b>positivos</b>, así que
+cualquier número <b>no positivo</b> (cero o negativo) marca el final.</p>
+
+<p>De acá salen dos observaciones que se derivan una de la otra:</p>
+
+<ul>
+  <li>la cantidad de veces que el usuario ingresa un dato es, en realidad, la cantidad de elementos
+  de la secuencia <b>más uno</b> —ese último ingreso es el centinela—;</li>
+  <li>y justamente por ser el centinela, ese último valor <b>no es parte de la secuencia</b>: no hay
+  que procesarlo.</li>
+</ul>
+
+<p>Por lo tanto, nuestro algoritmo tiene que <b>validar</b> si un dato recién leído es válido o es el
+centinela, <b>antes</b> de procesarlo. En criollo, el algoritmo hace esto: lee un dato, ve si es
+válido, lo procesa; lee otro dato, ve si es válido, lo procesa; lee otro dato, ve si es válido…
+y si no lo es, termina la repetición sin procesarlo.</p>
+
+<p>Como no sabemos cuántas vueltas van a hacer falta, esto ya no es una repetición definida: es una
+<b>repetición indefinida</b>. Armemos primero el esqueleto de la iteración, dejando pendiente qué
+hacer con cada número (con el mismo comentario placeholder del ejercicio anterior):</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+  programaprincipal {
+    locales {
+      double número
+    }
+    leer número
+    mientras número > 0 {
+      # hacemos algo con el número
+      leer número
+    }
+  }
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+#include <iostream>
+using namespace std;
+
+int main() {
+    double número;
+
+    cout << "Ingrese un número (0 para cortar): ";
+    cin >> número;
+    while (número > 0) {
+        // hacemos algo con el número
+        cout << "Ingrese un número (0 para cortar): ";
+        cin >> número;
+    }
+
+    return 0;
+}
+`</script>
+  </div>
+</div>
+
+<p>Fijate un detalle importante: hay una <b>lectura antes</b> del <code>mientras</code>, y otra al
+<b>final</b> del cuerpo. La primera nos da el primer dato, para poder evaluar la condición por
+primera vez —si no leyéramos nada antes, no tendríamos con qué comparar—. La segunda, después de
+procesar cada dato válido, nos consigue el <b>próximo</b> dato justo antes de volver a evaluar la
+condición. Gracias a este orden, cuando por fin llega el centinela, lo único que hacemos con él es
+evaluarlo: nunca llega a entrar al cuerpo, nunca se procesa.</p>
+
+<h2>La solución</h2>
+
+<p>Ya sabemos recorrer la secuencia; falta calcular el promedio. La idea es la misma del ejercicio
+anterior —acumular la suma y dividir por la cantidad de elementos—, con una diferencia: como ya no
+tenemos <i>n</i>, tenemos que <b>contar</b> nosotros mismos cuántos números válidos vamos
+procesando. Y contar es, ni más ni menos, <b>otro acumulador</b>: uno en el que, en vez de sumar
+cada número, siempre acumulamos <code>1</code>.</p>
+
+<p>Vamos a llamar <code>cantidad</code> a este contador, y reusar <code>suma</code> y
+<code>promedio</code> del ejercicio anterior:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+  programaprincipal {
+    locales {
+      double número
+      int cantidad
+      double suma
+      double promedio
+    }
+    cantidad := 0
+    suma := 0
+    leer número
+    mientras número > 0 {
+      cantidad := cantidad + 1
+      suma := suma + número
+      leer número
+    }
+    si cantidad > 0 {
+      promedio := suma / cantidad
+      escribir promedio
+    } sino {
+      escribir "No hay datos"
+    }
+  }
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+#include <iostream>
+using namespace std;
+
+int main() {
+    double número;
+    int cantidad;
+    double suma;
+    double promedio;
+
+    cantidad = 0;
+    suma = 0;
+
+    cout << "Ingrese un número (0 para cortar): ";
+    cin >> número;
+    while (número > 0) {
+        cantidad += 1;
+        suma += número;
+
+        cout << "Ingrese un número (0 para cortar): ";
+        cin >> número;
+    }
+
+    if (cantidad > 0) {
+        promedio = suma / cantidad;
+        cout << "El promedio es " << promedio << endl;
+    } else {
+        cout << "No hay datos" << endl;
+    }
+
+    return 0;
+}
+`</script>
+  </div>
+</div>
+
+<p>Notá que <code>cantidad</code> pasa por las mismas tres etapas que vimos para cualquier
+acumulador: se <b>inicializa</b> en <code>0</code>, se <b>acumula</b> una vez por cada número válido,
+y se <b>usa</b> al final, junto con <code>suma</code>, para calcular el promedio.</p>
+
+<p>Y otra vez tenemos que cuidarnos de un caso: si el primer número que ingresan ya es no positivo,
+la secuencia está vacía —<code>cantidad</code> queda en <code>0</code>— y
+<code>promedio := suma / cantidad</code> sería una división por cero. Por eso, antes de calcular el
+promedio, comprobamos que <code>cantidad</code> sea mayor que <code>0</code>; si no lo es, avisamos
+que no hay datos en lugar de calcular cualquier cosa.</p>
+
+<h2>Un caso de prueba</h2>
+
+<p>Probemos con dos casos: uno <b>con datos</b> —la misma secuencia del ejercicio anterior,
+<b>3, 15, 9, 27, 21</b>, cerrada con un <b>0</b> para que corte— y otro <b>sin datos</b>, donde
+lo primero que se ingresa ya es el <b>0</b>. Fijate cómo la condición del <code>mientras</code> se
+revisa antes de cada vuelta —también en la última, cuando el <code>0</code> hace que el ciclo
+termine— y cómo esa lectura final, la del <code>0</code>, nunca llega a sumarse:</p>
+
+<script>Reproductor({
+  diagrama: `
+    programaprincipal {
+      locales {
+        double número
+        int cantidad
+        double suma
+        double promedio
+      }
+      ≤01cantidad≥ := ≤010≥
+      ≤02suma≥ := ≤020≥
+      leer ≤03≤04número≥≥
+      mientras ≤05número > 0≥ {
+        ≤06cantidad≥ := ≤06cantidad + 1≥
+        ≤07suma≥ := ≤07suma + número≥
+        leer ≤08≤09número≥≥
+      }
+      si ≤13cantidad > 0≥ {
+        ≤10promedio≥ := ≤10suma / cantidad≥
+        escribir ≤11promedio≥
+      } sino {
+        escribir ≤14"No hay datos"≥
+      }
+    }
+  `,
+  código: `
+    int main() {
+        double número;
+        int cantidad;
+        double suma;
+        double promedio;
+
+        ≤01cantidad = 0;≥
+        ≤02suma = 0;≥
+
+        ≤03cout << "Ingrese un número (0 para cortar): ";≥
+        ≤04cin >> número;≥
+        while (≤05número > 0≥) {
+            ≤06cantidad += 1;≥
+            ≤07suma += número;≥
+
+            ≤08cout << "Ingrese un número (0 para cortar): ";≥
+            ≤09cin >> número;≥
+        }
+
+        ≤13if (cantidad > 0) {≥
+            ≤10promedio = suma / cantidad;≥
+            ≤11cout << "El promedio es " << promedio << endl;≥
+        } else {
+            ≤14cout << "No hay datos" << endl;≥
+        }
+
+        ≤12return 0;≥
+    }
+  `
+}, {
+  "con datos": [
+    { expresiones:{ "número":{}, "cantidad":{}, "suma":{}, "promedio":{} } },
+    { zona:1, expresiones:{ "cantidad":0 } },
+    { zona:2, expresiones:{ "suma":0 } },
+
+    { zona:3, salida:"Ingrese un número (0 para cortar): " },
+    { zona:4, expresiones:{ "número":3 }, salida:"3\n" },
+
+    { zona:5 },
+    { zona:6, expresiones:{ "cantidad":1 } },
+    { zona:7, expresiones:{ "suma":3 } },
+    { zona:8, salida:"Ingrese un número (0 para cortar): " },
+    { zona:9, expresiones:{ "número":15 }, salida:"15\n" },
+
+    { zona:5 },
+    { zona:6, expresiones:{ "cantidad":2 } },
+    { zona:7, expresiones:{ "suma":18 } },
+    { zona:8, salida:"Ingrese un número (0 para cortar): " },
+    { zona:9, expresiones:{ "número":9 }, salida:"9\n" },
+
+    { zona:5 },
+    { zona:6, expresiones:{ "cantidad":3 } },
+    { zona:7, expresiones:{ "suma":27 } },
+    { zona:8, salida:"Ingrese un número (0 para cortar): " },
+    { zona:9, expresiones:{ "número":27 }, salida:"27\n" },
+
+    { zona:5 },
+    { zona:6, expresiones:{ "cantidad":4 } },
+    { zona:7, expresiones:{ "suma":54 } },
+    { zona:8, salida:"Ingrese un número (0 para cortar): " },
+    { zona:9, expresiones:{ "número":21 }, salida:"21\n" },
+
+    { zona:5 },
+    { zona:6, expresiones:{ "cantidad":5 } },
+    { zona:7, expresiones:{ "suma":75 } },
+    { zona:8, salida:"Ingrese un número (0 para cortar): " },
+    { zona:9, expresiones:{ "número":0 }, salida:"0\n" },
+
+    { zona:5 },
+
+    { zona:13 },
+    { zona:10, expresiones:{ "promedio":15 } },
+    { zona:11, salida:"El promedio es 15\n" },
+    { zona:[12,"F"] }
+  ],
+  "sin datos": [
+    { expresiones:{ "número":{}, "cantidad":{}, "suma":{}, "promedio":{} } },
+    { zona:1, expresiones:{ "cantidad":0 } },
+    { zona:2, expresiones:{ "suma":0 } },
+
+    { zona:3, salida:"Ingrese un número (0 para cortar): " },
+    { zona:4, expresiones:{ "número":0 }, salida:"0\n" },
+
+    { zona:5 },
+
+    { zona:13 },
+    { zona:14, salida:"No hay datos\n" },
+    { zona:[12,"F"] }
+  ]
+}, { consola:{ lineas:7 } })</script>
+
+<p>Una última vuelta de tuerca, para tener siempre presente. Ya habíamos dicho, al hablar de
+repetición indefinida, que la condición tiene que poder cambiar como consecuencia de lo que pasa
+adentro del ciclo. Este ejercicio es un buen ejemplo concreto de esa regla: nuestra condición es
+<code>número &gt; 0</code>, y lo que la hace cambiar es la <b>lectura</b> al final del cuerpo —sin
+esa lectura, <code>número</code> se quedaría con el mismo valor para siempre y el ciclo no
+terminaría nunca—. Cada vez que armes una repetición indefinida, revisá lo mismo: identificá qué
+variable aparece en la condición, y asegurate de que <b>algo dentro del cuerpo</b> la modifique, de
+forma que en algún momento la condición pueda dejar de cumplirse.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="15.%20M%C3%A1ximos%20y%20m%C3%ADnimos.html">Siguiente: Máximos y mínimos →</a>
+</div>
+
+</body>
+</html>

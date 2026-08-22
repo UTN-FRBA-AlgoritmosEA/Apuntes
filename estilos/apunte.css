@@ -19,6 +19,13 @@ pre.pseudo { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monos
 .volver { display:inline-block; margin-bottom:8px; font-size:14px; color:#b08a3e; text-decoration:none; }
 .volver:hover { text-decoration:underline; }
 
+/* Tabla comparativa (p. ej. tipos de datos). */
+.tabla-tipos { width:100%; border-collapse:collapse; margin:18px 0; font-size:15px; }
+.tabla-tipos th, .tabla-tipos td { border:1px solid #e6ddc9; padding:8px 12px; text-align:left; }
+.tabla-tipos th { background:#f7f3ea; font-weight:bold; color:#333; }
+.tabla-tipos td code, .tabla-tipos th code { background:none; padding:0; }
+.tabla-tipos tbody tr:nth-child(even) { background:#faf8f2; }
+
 /* Ejemplo con pestañas Diagrama / Código (la barra la arma estilos/apunte.js). */
 .ejemplo { border:1px solid #e6ddc9; border-radius:6px; margin:18px 0; overflow:hidden; }
 .ejemplo-tabs { display:flex; gap:0; background:#faf6ec; border-bottom:1px solid #e6ddc9; }
@@ -50,6 +57,9 @@ pre.pseudo { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monos
   blockquote { border-left-color:#5c5647; color:#b3b3bb; }
   pre.pseudo { background:#26262b; border-color:#44444c; color:#dcdce2; }
   .volver { color:#d6b45a; }
+  .tabla-tipos th, .tabla-tipos td { border-color:#44444c; }
+  .tabla-tipos th { background:#26262b; color:#e2e2e8; }
+  .tabla-tipos tbody tr:nth-child(even) { background:#222226; }
   .ejemplo { border-color:#44444c; }
   .ejemplo-tabs { background:#26262b; border-bottom-color:#44444c; }
   .ejemplo-tab { color:#a8a8b0; }

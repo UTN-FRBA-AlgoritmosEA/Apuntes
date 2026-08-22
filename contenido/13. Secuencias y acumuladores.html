@@ -1,0 +1,321 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>13. Secuencias y acumuladores</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>13. Secuencias y acumuladores</h1>
+<p class="nota">Primera iteración sobre una secuencia.</p>
+
+<p>Hasta ahora leíamos un puñado fijo de datos sueltos: dos números, tres variables. Este ejercicio
+es distinto: vamos a leer una <b>secuencia completa</b> de números, cuyo tamaño no conocemos hasta
+que el propio usuario nos lo dice. Es la primera vez que recorremos una secuencia de punta a
+punta, y de paso vamos a formalizar una herramienta que ya usamos de pasada: el <b>acumulador</b>.</p>
+
+<h2>El enunciado</h2>
+
+<blockquote>Dada una secuencia de <i>n</i> números, mostrar el promedio.</blockquote>
+
+<h2>Análisis</h2>
+
+<p>Para resolver esto necesitamos, antes que nada, saber <b>cuántos</b> números vamos a leer: eso es
+<i>n</i>. Una vez que lo tenemos, ya sabemos exactamente cuántas vueltas dar, así que conviene una
+<b>repetición definida</b> que, en cada vuelta, lea uno de los números de la secuencia. Podés
+alternar entre el diagrama y el código de abajo con las pestañas:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+  programaprincipal {
+    locales {
+      int n
+      int i
+      double número
+    }
+    leer n
+    para i de 1 a n {
+      leer número
+      # hacemos algo con el número
+    }
+  }
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    int i;
+    double número;
+
+    cout << "Ingrese la cantidad de números: ";
+    cin >> n;
+
+    for (i = 1; i <= n; i += 1) {
+        cout << "Ingrese el número " << i << ": ";
+        cin >> número;
+        // hacemos algo con el número
+    }
+
+    return 0;
+}
+`</script>
+  </div>
+</div>
+
+<p>Todavía no sabemos qué hacer con cada número que leemos —eso lo resolvemos en la próxima
+sección—, pero ya tenemos resuelta la parte de recorrer la secuencia. Esta forma —leer primero
+cuántos elementos vienen, y después iterar leyendo cada uno— es un patrón general que vamos a
+reconocer en cualquier ejercicio que trabaje sobre una <b>secuencia definida</b> (una secuencia cuyo
+tamaño conocemos de antemano, antes de empezar a leerla).</p>
+
+<h2>El acumulador</h2>
+
+<p>Para calcular el promedio de una secuencia de números hace falta sumarlos a todos y dividir esa
+suma por la cantidad de elementos. La cantidad ya la tenemos: es <i>n</i>. Pero la suma todavía no
+existe en ningún lado —hay que irla construyendo a medida que leemos cada número—.</p>
+
+<p>Para eso usamos un <b>acumulador</b>: una variable en la que vamos sumando (acumulando) repetidas
+veces un valor. Ya nos habíamos cruzado con la idea, de pasada, cuando vimos el operador
+<code>+=</code>. Ahora la vamos a formalizar. Un acumulador tiene esta forma:</p>
+
+<script>Diagrama`
+  acumulador := acumulador + acumulando
+  acumulador += acumulando
+`</script>
+
+<p>Las dos formas son equivalentes; la segunda es simplemente más corta. Fijate que cada vez que
+acumulamos, el valor del acumulador <b>crece</b> según lo que se acumula: si <code>acumulador</code>
+valía 10 y acumulamos 5, después va a valer 15.</p>
+
+<p>Pero eso mismo implica algo importante: durante la <b>primera</b> acumulación, el acumulador ya
+tiene que tener un valor inicial. Si no lo inicializáramos, arrastraría un valor residual —de esos
+que vimos al hablar de variables sin inicializar— y el resultado sería basura.</p>
+
+<p>Podemos identificar, entonces, <b>tres etapas</b> en el uso de un acumulador:</p>
+
+<ul>
+  <li><b>Inicialización</b>: asignarle un valor inicial antes de la primera acumulación (a esto se
+  lo llama, en general, <i>inicializar</i> una variable).</li>
+  <li><b>Acumulación</b>: sumarle repetidas veces un valor, una vez por cada dato que procesamos.</li>
+  <li><b>Uso</b>: hacer algo con el valor ya acumulado —por lo general, al terminar de acumular,
+  aunque en algunos casos puede ser también antes—.</li>
+</ul>
+
+<h2>La solución</h2>
+
+<p>Apliquemos el acumulador a nuestro algoritmo. Vamos a llamar <code>suma</code> al acumulador y
+<code>promedio</code> al resultado final:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+  programaprincipal {
+    locales {
+      int n
+      int i
+      double número
+      double suma
+      double promedio
+    }
+    leer n
+    ¡¡g|suma := 0¡¡
+    para i de 1 a n {
+      leer número
+      ¡¡b|suma += número¡¡
+    }
+    si n > 0 {
+      promedio := ¡¡o|suma¡¡ / n
+      escribir promedio
+    } sino {
+      escribir "No hay datos"
+    }
+  }
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    int i;
+    double número;
+    double suma;
+    double promedio;
+
+    cout << "Ingrese la cantidad de números: ";
+    cin >> n;
+
+    suma = 0;
+    for (i = 1; i <= n; i += 1) {
+        cout << "Ingrese el número " << i << ": ";
+        cin >> número;
+        suma += número;
+    }
+
+    if (n > 0) {
+        promedio = suma / n;
+        cout << "El promedio es " << promedio << endl;
+    } else {
+        cout << "No hay datos" << endl;
+    }
+
+    return 0;
+}
+`</script>
+  </div>
+</div>
+
+<p>En el diagrama marcamos en colores las <b>tres etapas</b> de <code>suma</code>: en verde la
+<b>inicialización</b>, en azul la <b>acumulación</b> (que se repite una vez por cada número leído),
+y en naranja el <b>uso</b>, cuando dividimos la suma acumulada por <i>n</i> para obtener el
+promedio.</p>
+
+<p>Fijate que agregamos una <b>decisión</b>: si <i>n</i> vale <code>0</code>, no leímos ningún
+número, y <code>promedio := suma / n</code> intentaría dividir por cero, algo que no tiene sentido.
+Con <code>suma</code> también en <code>0</code>, esa cuenta da <code>0 / 0</code>, que en coma
+flotante produce un valor especial llamado <b>NaN</b> (<i>Not a Number</i>, "no es un número") —no
+es un error que corte el programa, pero tampoco es un promedio que le sirva a nadie—. Por eso, antes
+de calcular cualquier cosa, comprobamos que <i>n</i> sea mayor que <code>0</code>; si no lo es,
+avisamos que no hay datos.</p>
+
+<h2>Un caso de prueba</h2>
+
+<p>Veamos el algoritmo completo corriendo, con dos casos: uno <b>con datos</b> —la secuencia
+<b>3, 15, 9, 27, 21</b>— y otro <b>sin datos</b>, cuando <i>n</i> vale <code>0</code>. Fijate cómo
+<code>suma</code> se resalta en cada vuelta del ciclo, acumulando de a un número, hasta que al final
+se usa para calcular el promedio —o, cuando no hay datos, se muestra el aviso en su lugar—:</p>
+
+<script>Reproductor({
+  diagrama: `
+    programaprincipal {
+      locales {
+        int n
+        int i
+        double número
+        double suma
+        double promedio
+      }
+      leer ≤01≤02n≥≥
+      ≤03suma≥ := ≤030≥
+      para ≤05≤09i≥≥ de ≤041≥ a ≤05n≥ {
+        leer ≤06≤07número≥≥
+        ≤08suma≥ := ≤08suma + número≥
+      }
+      si ≤13n > 0≥ {
+        ≤10promedio≥ := ≤10suma / n≥
+        escribir ≤11promedio≥
+      } sino {
+        escribir ≤14"No hay datos"≥
+      }
+    }
+  `,
+  código: `
+    int main() {
+        int n;
+        int i;
+        double número;
+        double suma;
+        double promedio;
+
+        ≤01cout << "Ingrese la cantidad de números: ";≥
+        ≤02cin >> n;≥
+
+        ≤03suma = 0;≥
+        for (≤04i = 1≥; ≤05i <= n≥; ≤09i += 1≥) {
+            ≤06cout << "Ingrese el número " << i << ": ";≥
+            ≤07cin >> número;≥
+            ≤08suma += número;≥
+        }
+
+        ≤13if (n > 0) {≥
+            ≤10promedio = suma / n;≥
+            ≤11cout << "El promedio es " << promedio << endl;≥
+        } else {
+            ≤14cout << "No hay datos" << endl;≥
+        }
+
+        ≤12return 0;≥
+    }
+  `
+}, {
+  "con datos": [
+    { expresiones:{ "n":{}, "i":{}, "número":{}, "suma":{}, "promedio":{} } },
+    { zona:1, salida:"Ingrese la cantidad de números: " },
+    { zona:2, expresiones:{ "n":5 }, salida:"5\n" },
+    { zona:3, expresiones:{ "suma":0 } },
+
+    { zona:4, expresiones:{ "i":1 } },
+
+    { zona:5 },
+    { zona:6, salida:"Ingrese el número 1: " },
+    { zona:7, expresiones:{ "número":3 }, salida:"3\n" },
+    { zona:8, expresiones:{ "suma":3 } },
+    { zona:9, expresiones:{ "i":2 } },
+
+    { zona:5 },
+    { zona:6, salida:"Ingrese el número 2: " },
+    { zona:7, expresiones:{ "número":15 }, salida:"15\n" },
+    { zona:8, expresiones:{ "suma":18 } },
+    { zona:9, expresiones:{ "i":3 } },
+
+    { zona:5 },
+    { zona:6, salida:"Ingrese el número 3: " },
+    { zona:7, expresiones:{ "número":9 }, salida:"9\n" },
+    { zona:8, expresiones:{ "suma":27 } },
+    { zona:9, expresiones:{ "i":4 } },
+
+    { zona:5 },
+    { zona:6, salida:"Ingrese el número 4: " },
+    { zona:7, expresiones:{ "número":27 }, salida:"27\n" },
+    { zona:8, expresiones:{ "suma":54 } },
+    { zona:9, expresiones:{ "i":5 } },
+
+    { zona:5 },
+    { zona:6, salida:"Ingrese el número 5: " },
+    { zona:7, expresiones:{ "número":21 }, salida:"21\n" },
+    { zona:8, expresiones:{ "suma":75 } },
+    { zona:9, expresiones:{ "i":6 } },
+
+    { zona:5 },
+
+    { zona:13 },
+    { zona:10, expresiones:{ "promedio":15 } },
+    { zona:11, salida:"El promedio es 15\n" },
+    { zona:[12,"F"] }
+  ],
+  "sin datos": [
+    { expresiones:{ "n":{}, "i":{}, "número":{}, "suma":{}, "promedio":{} } },
+    { zona:1, salida:"Ingrese la cantidad de números: " },
+    { zona:2, expresiones:{ "n":0 }, salida:"0\n" },
+    { zona:3, expresiones:{ "suma":0 } },
+
+    { zona:4, expresiones:{ "i":1 } },
+    { zona:5 },
+
+    { zona:13 },
+    { zona:14, salida:"No hay datos\n" },
+    { zona:[12,"F"] }
+  ]
+}, { consola:{ lineas:7 } })</script>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="14.%20Secuencia%20indefinida.html">Siguiente: Secuencia indefinida →</a>
+</div>
+
+</body>
+</html>

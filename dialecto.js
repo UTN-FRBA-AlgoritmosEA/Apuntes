@@ -290,20 +290,30 @@
   };
 
   // ---- Entrada / Salida ----
+  // file (opcional) = variable con el archivo/handle; se dibuja en una banda arriba, separada por
+  // una línea. Sin file, el bloque es idéntico al de antes (sin banda ni línea).
   function io(kind) {
-    return function (content) {
+    return function (content, file) {
+      file = file || null;
       var node = { type: kind };
       sized(node, function () {
-        var c = measure(content);
-        return { w: c.w + 5 * PAD, h: c.h + 2 * PAD, c: c };
+        var c = measure(content), f = file ? measure(file) : null;
+        var fileH = file ? f.h + 2 * PAD : 0;
+        var w = Math.max(c.w, file ? f.w : 0) + 5 * PAD;
+        return { w: w, h: fileH + c.h + 2 * PAD, c: c, f: f, fileH: fileH };
       });
       node.draw = function (g, cx, top) {
         var s = node.size(), x0 = cx - s.w / 2, x1 = x0 + s.w, y1 = top + s.h, sl = 1.6 * PAD;
-        if (kind === "input") // trapecio más ancho arriba
-          poly(g, [[x0, top], [x1, top], [x1 - sl, y1], [x0 + sl, y1]]);
-        else                  // salida: más ancho abajo
-          poly(g, [[x0 + sl, top], [x1 - sl, top], [x1, y1], [x0, y1]]);
-        addText(g, cx, top + s.h / 2, content);
+        // inset lateral en cada extremo (0 = lado ancho, sl = lado angosto), varía según kind
+        var insetTop = (kind === "input") ? 0 : sl, insetBottom = (kind === "input") ? sl : 0;
+        function insetEn(y) { return insetTop + (insetBottom - insetTop) * (y - top) / s.h; }
+        poly(g, [[x0 + insetTop, top], [x1 - insetTop, top], [x1 - insetBottom, y1], [x0 + insetBottom, y1]]);
+        if (file) {
+          var yDiv = top + s.fileH, ins = insetEn(yDiv);
+          line(g, x0 + ins, yDiv, x1 - ins, yDiv);
+          addText(g, cx, top + s.fileH / 2, file);
+        }
+        addText(g, cx, top + s.fileH + (s.h - s.fileH) / 2, content);
       };
       return node;
     };
@@ -480,6 +490,17 @@
     "vertical-align:text-bottom;margin-left:1px;animation:d-blink 1.05s step-end infinite;}" +
     "@keyframes d-blink{0%,100%{opacity:1}50%{opacity:0}}" +
     ".dialecto-repro .d-diag-box{overflow:auto;resize:vertical;min-height:100px;border:1px solid #e2d8c0;border-radius:5px;}" +
+    // recuadro Diagrama/Código: un solo borde (como .ejemplo/.ejemplo-tabs de los apuntes), las
+    // pestañas integradas arriba; los hijos anidados pierden su propio borde (evita doble recuadro)
+    ".dialecto-repro .d-vista-box{border:1px solid #e2d8c0;border-radius:5px;overflow:hidden;margin:8px 0;}" +
+    ".dialecto-repro .d-vista-tabs{display:flex;gap:0;background:#f3ecdd;border-bottom:1px solid #e2d8c0;}" +
+    ".dialecto-repro .d-vista-tabs button{font:14px Georgia,serif;background:none;border:none;" +
+    "padding:6px 16px;cursor:pointer;color:#6a6a6a;border-bottom:2px solid transparent;margin-bottom:-1px;}" +
+    ".dialecto-repro .d-vista-tabs button:hover{color:#242424;}" +
+    ".dialecto-repro .d-vista-tabs button.activo{color:#242424;border-bottom-color:#b08a3e;font-weight:bold;}" +
+    ".dialecto-repro .d-vista-box .d-diag-box{border:0;border-radius:0;margin:0;}" +
+    ".dialecto-repro .d-vista-box .dialecto-code{border:0;border-radius:0;margin:0;}" +
+    ".dialecto-repro .dialecto-code{font-size:12px;}" +   // código más chico solo en el Reproductor
     ".dialecto-repro .d-watch-box{overflow:auto;resize:vertical;min-height:40px;border:1px solid #e2d8c0;border-radius:5px;}" +
     ".dialecto-repro .d-watch{overflow-x:auto;font:13px/1.5 'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace;color:#2b2b2b;padding:2px 0;}" +
     ".dialecto-repro .d-watch table{border-collapse:collapse;}" +
@@ -507,6 +528,8 @@
     ".dialecto-code .c-num{color:#b5651d;}" +
     ".dialecto-code .c-kw{color:#0b60b0;font-weight:bold;}" +
     ".dialecto-code .c-fn{color:#7a5900;}" +
+    ".dialecto-code .d-zona-box{background:transparent;transition:background-color .25s ease;border-radius:3px;}" +
+    ".dialecto-code .d-zona-box.activa{background-color:rgba(120,195,240,.5);}" +
     // ---- dark mode ----
     "@media (prefers-color-scheme:dark){" +
     "svg.dialecto text{fill:#e8e8ea;}" +
@@ -525,6 +548,11 @@
     ".dialecto-repro .d-caso.activo{background:#23232a;border-color:#b9b9c2;color:#f0f0f2;}" +
     ".dialecto-repro .d-repro-paso{color:#a8a8b0;}" +
     ".dialecto-repro .d-diag-box,.dialecto-repro .d-watch-box{border-color:#44444c;}" +
+    ".dialecto-repro .d-vista-box{border-color:#44444c;}" +
+    ".dialecto-repro .d-vista-tabs{background:#26262b;border-bottom-color:#44444c;}" +
+    ".dialecto-repro .d-vista-tabs button{color:#a8a8b0;}" +
+    ".dialecto-repro .d-vista-tabs button:hover{color:#e2e2e8;}" +
+    ".dialecto-repro .d-vista-tabs button.activo{color:#f0f0f2;border-bottom-color:#d6b45a;}" +
     ".dialecto-repro .d-watch{color:#dcdce2;}" +
     ".dialecto-repro .d-w-key{color:#6fb3ff;}" +
     ".dialecto-repro .d-reg,.dialecto-repro .d-arr{border-color:#4d4d57;background:#2e2e35;}" +
@@ -540,6 +568,8 @@
     ".dialecto-code .c-com{color:#9a958a;}.dialecto-code .c-pre{color:#c98fe0;}" +
     ".dialecto-code .c-str{color:#7fd08a;}.dialecto-code .c-num{color:#e0975a;}" +
     ".dialecto-code .c-kw{color:#6fb3ff;}.dialecto-code .c-fn{color:#d6b45a;}" +
+    // ámbar (no azul) en dark: c-kw ya es celeste, chocaría con el mismo esquema que usa el SVG
+    ".dialecto-code .d-zona-box.activa{background-color:rgba(170,110,20,.55);}" +
     ".dialecto-repro .d-w-chg{background:rgba(170,110,20,.5);}" +   // resaltado de cambio legible en dark
     "}";
   function injectCSS() {
@@ -698,8 +728,13 @@
     return t;
   }
 
-  function makeRepro(svg, casos, watchEl, consolaEl) {
-    var boxes = svg.querySelectorAll(".d-zona-box");
+  // scroll suave si el navegador lo soporta (mismo feature-detect que "scroll-behavior" en CSS),
+  // instantáneo si no.
+  var SCROLL_SUAVE = ("scrollBehavior" in document.documentElement.style);
+
+  function makeRepro(svg, casos, watchEl, consolaEl, codeEl) {
+    var roots = codeEl ? [svg, codeEl] : [svg];
+    var boxes = [].concat.apply([], roots.map(function (r) { return [].slice.call(r.querySelectorAll(".d-zona-box")); }));
     var pos = casos.map(function (c) { return c.pasos.length ? 1 : 0; });   // última posición por caso (memoria)
     var ctrl = { caso: 0, timer: null };
     function steps() { return casos[ctrl.caso].pasos; }
@@ -707,11 +742,35 @@
     ctrl.i = pos[0];
     function limpiar() { for (var k = 0; k < boxes.length; k++) boxes[k].classList.remove("activa"); }
     function aplicarZonas(step) {
+      // filtra sobre `boxes` (ya cacheado, cubre svg + código) en vez de re-consultar el DOM:
+      // así un mismo id resalta simultáneamente diagrama y código.
       var ids = normZonas(step && step.zona);
-      for (var a = 0; a < ids.length; a++) {
-        var sel = svg.querySelectorAll('.d-zona-box[data-zona~="' + ids[a] + '"]');
-        for (var b = 0; b < sel.length; b++) sel[b].classList.add("activa");
+      for (var k = 0; k < boxes.length; k++) {
+        var bz = (boxes[k].getAttribute("data-zona") || "").split(/\s+/);
+        for (var a = 0; a < ids.length; a++) {
+          if (bz.indexOf(ids[a]) !== -1) { boxes[k].classList.add("activa"); break; }
+        }
       }
+    }
+    function centrar(el) {
+      var cont = el.closest(".d-diag-box");   // sirve para diagBox y codeBox (codeBox lleva esa clase también)
+      if (!cont) return;
+      var er = el.getBoundingClientRect(), cr = cont.getBoundingClientRect();
+      cont.scrollTo({
+        top: cont.scrollTop + (er.top + er.bottom) / 2 - (cr.top + cr.bottom) / 2,
+        left: cont.scrollLeft + (er.left + er.right) / 2 - (cr.left + cr.right) / 2,
+        behavior: SCROLL_SUAVE ? "smooth" : "auto"
+      });
+    }
+    function asegurarVisible() {
+      roots.forEach(function (root) {
+        for (var k = 0; k < boxes.length; k++) {
+          if (boxes[k].classList.contains("activa") && root.contains(boxes[k])) {
+            centrar(boxes[k]);   // siempre recentra (evita el salto grande de golpe al llegar al borde)
+            break;   // alcanza con el primer match de esta raíz; evita "pelear" scrolls si hay varias zonas
+          }
+        }
+      });
     }
     function pintarExpr() {
       if (!watchEl) return;
@@ -733,7 +792,7 @@
       var S = steps(), mi = minI();
       ctrl.i = Math.max(mi, Math.min(S.length, n));
       limpiar();
-      if (ctrl.i > mi) aplicarZonas(S[ctrl.i - 1]);   // el inicio (mi) no resalta zonas
+      if (ctrl.i > mi) { aplicarZonas(S[ctrl.i - 1]); asegurarVisible(); }   // el inicio (mi) no resalta zonas
       pintarExpr();
       pintarConsola();
       if (ctrl.actualizar) ctrl.actualizar();
@@ -766,8 +825,14 @@
     return ctrl;
   }
 
-  global.Reproductor = function (src, steps, config) {
+  global.Reproductor = function (primero, steps, config) {
     config = config || {};
+    // 1er parámetro: string (solo diagrama, como antes) u objeto {diagrama, código|codigo}
+    var esObjetoFuente = primero && typeof primero === "object" && !Array.isArray(primero);
+    var diagramaSrc = esObjetoFuente ? primero.diagrama : primero;
+    var tieneCodigo = esObjetoFuente && (primero["código"] != null || primero.codigo != null);
+    var codigoSrc = tieneCodigo ? (primero["código"] != null ? primero["código"] : primero.codigo) : null;
+
     // 2º parámetro: array (una sola grabación) u objeto {nombre: pasos, ...} (varios "casos")
     var conCasos = steps && !Array.isArray(steps) && typeof steps === "object";
     var casos;
@@ -785,12 +850,26 @@
     var selEl = null, casoBtns = [];
     if (conCasos) { selEl = h("div", "d-repro-casos"); wrap.appendChild(selEl); }
 
-    var r = D.parse(String(src));
+    // recuadro Diagrama/Código: con código, un solo borde (como .ejemplo) con las pestañas
+    // integradas arriba; sin código, el diagrama queda suelto tal como antes (sin regresión)
+    var vistaEl = null, diagTabBtn = null, codeTabBtn = null, vistaBox = wrap;
+    if (tieneCodigo) {
+      vistaBox = h("div", "d-vista-box"); wrap.appendChild(vistaBox);
+      vistaEl = h("div", "d-vista-tabs");
+      diagTabBtn = document.createElement("button");
+      diagTabBtn.type = "button"; diagTabBtn.className = "activo"; diagTabBtn.textContent = "Diagrama";
+      codeTabBtn = document.createElement("button");
+      codeTabBtn.type = "button"; codeTabBtn.textContent = "Código";
+      vistaEl.appendChild(diagTabBtn); vistaEl.appendChild(codeTabBtn);
+      vistaBox.appendChild(vistaEl);
+    }
+
+    var r = D.parse(String(diagramaSrc));
     var svg = null, diagBox = null;
     try {
       svg = D.render(r.node);
       diagBox = h("div", "d-diag-box"); diagBox.appendChild(svg);   // caja con scroll + resize vertical
-      wrap.appendChild(diagBox);
+      vistaBox.appendChild(diagBox);
     }
     catch (e) {
       var eb = document.createElement("div"); eb.className = "dialecto-error";
@@ -800,6 +879,17 @@
       var er = document.createElement("div"); er.className = "dialecto-error";
       er.textContent = r.errors.join("\n"); wrap.appendChild(er);
     }
+
+    // panel de código (opcional): mismas zonas que el diagrama, oculto hasta elegir la pestaña
+    var codeBox = null, codePre = null;
+    if (svg && tieneCodigo) {
+      codePre = document.createElement("pre"); codePre.className = "dialecto-code";
+      codePre.innerHTML = highlightCZonas(dedent(String(codigoSrc)));
+      codeBox = h("div", "d-code-box d-diag-box"); codeBox.appendChild(codePre);
+      codeBox.style.display = "none";   // arranca oculto: la vista por defecto es "Diagrama"
+      vistaBox.appendChild(codeBox);
+    }
+
     var ctrl = null, watchEl = null;
     if (svg) {
       var bar = document.createElement("div"); bar.className = "d-repro-bar";
@@ -826,7 +916,7 @@
       watchEl = h("div", "d-watch");
       var watchBox = h("div", "d-watch-box"); watchBox.appendChild(watchEl); wrap.appendChild(watchBox);
 
-      ctrl = makeRepro(svg, casos, watchEl, consolaEl);
+      ctrl = makeRepro(svg, casos, watchEl, consolaEl, codePre);
       ctrl.onplay = function (on) {
         bPlay.textContent = on ? "⏸" : "▶";
         bPlay.title = on ? "Pausar" : "Reproducir";
@@ -857,6 +947,15 @@
     }
     insertHere(wrap);
     if (ctrl) {
+      // alto disponible en pantalla para el box activo, descontando todo lo que lo rodea
+      function avail() {
+        var vistaH = vistaEl ? vistaEl.offsetHeight : 0;
+        var selH = selEl ? selEl.offsetHeight : 0;
+        var barH = bar ? bar.offsetHeight : 0;
+        var exprH = watchBox ? watchBox.offsetHeight : 0;
+        var consH = consolaEl ? consolaEl.offsetHeight : 0;
+        return (global.innerHeight || 800) - vistaH - selH - barH - exprH - consH - 48;
+      }
       // alto estable: reservar el alto máximo del panel de expresiones sobre TODAS las grabaciones
       var maxH = 0;
       casos.forEach(function (c) {
@@ -869,24 +968,55 @@
       });
       watchEl.style.minHeight = maxH + "px";
       // alto inicial del diagrama: completo, o el máximo disponible en pantalla
-      // (descontando selector, controles, consola y expresiones, para poder verlos juntos)
+      // (para poder verlo junto con controles/consola/expresiones)
       if (diagBox && svg) {
         var setDiagH = function (contentH) {   // contentH incluye márgenes del svg
-          var selH = selEl ? selEl.offsetHeight : 0;
-          var barH = bar ? bar.offsetHeight : 0;
-          var exprH = watchBox ? watchBox.offsetHeight : 0;
-          var consH = consolaEl ? consolaEl.offsetHeight : 0;
-          var avail = (global.innerHeight || 800) - selH - barH - exprH - consH - 48;
-          var hInit = (contentH <= avail) ? contentH : Math.max(160, avail);
+          var a = avail();
+          var hInit = (contentH <= a) ? contentH : Math.max(160, a);
           diagBox.style.height = Math.round(hInit) + "px";
+          // el código comparte el mismo alto que el diagrama (medido solo del diagrama), para que
+          // cambiar de pestaña no mueva nada de lo que está debajo; si el código es más alto, scrollea
+          if (codeBox) codeBox.style.height = diagBox.style.height;
         };
         var attrH = parseFloat(svg.getAttribute("height")) || 0;
         if (attrH) setDiagH(attrH + 20);   // sincrónico: alto natural aprox (el layout aún no resolvió height:auto)
+        // resize manual (arrastrar el borde de cualquiera de las dos cajas): espejar el alto en la
+        // otra, para que no queden desincronizadas al volver a esa pestaña. La caja oculta
+        // (display:none) no tiene layout propio, así que solo la visible dispara el observer.
+        if (codeBox && global.ResizeObserver) {
+          var syncingH = false;
+          var espejar = function (origen, destino) {
+            return function () {
+              if (syncingH) return;
+              // el cambio de pestaña también dispara el observer (la caja que se oculta "resizea" a
+              // 0): ignorarlo, si no pisa el alto nuevo con el valor viejo de la caja que se esconde
+              if (global.getComputedStyle(origen).display === "none") return;
+              var h = origen.style.height;
+              if (h && destino.style.height !== h) {
+                syncingH = true;
+                destino.style.height = h;
+                syncingH = false;
+              }
+            };
+          };
+          new global.ResizeObserver(espejar(diagBox, codeBox)).observe(diagBox);
+          new global.ResizeObserver(espejar(codeBox, diagBox)).observe(codeBox);
+        }
         if (global.requestAnimationFrame) {
           global.requestAnimationFrame(function () {
             setDiagH(diagBox.scrollHeight || attrH + 20);   // refina con el alto real del contenido
           });
         }
+      }
+      function mostrarVista(cual) {
+        diagBox.style.display = (cual === "codigo") ? "none" : "";
+        if (codeBox) codeBox.style.display = (cual === "codigo") ? "" : "none";
+        if (diagTabBtn) diagTabBtn.classList.toggle("activo", cual !== "codigo");
+        if (codeTabBtn) codeTabBtn.classList.toggle("activo", cual === "codigo");
+      }
+      if (vistaEl) {
+        diagTabBtn.onclick = function () { mostrarVista("diagrama"); };
+        codeTabBtn.onclick = function () { mostrarVista("codigo"); };
       }
       ctrl.irA(ctrl.i);                          // arranca en la posición del caso 0
       if (ctrl.onCaso) ctrl.onCaso(ctrl.caso);   // marca el caso activo en el selector
@@ -905,7 +1035,10 @@
   function dedent(s) {
     s = s.replace(/^\n+/, "").replace(/[ \t\n]+$/, "");
     var lines = s.split("\n"), min = Infinity;
-    lines.forEach(function (l) { if (l.trim()) { var n = l.match(/^[ \t]*/)[0].length; if (n < min) min = n; } });
+    // medir ignorando marcadores de zona (≤XX/≥), por si alguno cae antes de la indentación real
+    lines.forEach(function (l) {
+      if (l.trim()) { var n = l.replace(/≤[0-9A-Za-z]{2}|≥/g, "").match(/^[ \t]*/)[0].length; if (n < min) min = n; }
+    });
     if (min === Infinity) min = 0;
     return lines.map(function (l) { return l.slice(min); }).join("\n");
   }
@@ -918,18 +1051,66 @@
     "([A-Za-z_]\\w*(?=\\s*\\())"                                               // 6 función (id antes de "(")
   ].join("|"), "g");
   var C_CLS = [null, "c-com", "c-pre", "c-str", "c-num", "c-kw", "c-fn"];
-  function highlightC(src) {
-    var out = "", last = 0, m;
+
+  // solo datos: [{start, end, cls}] de los tramos que matchean sintaxis C. Sin HTML.
+  function cSpans(text) {
+    var out = [], m;
     C_RE.lastIndex = 0;
-    while ((m = C_RE.exec(src))) {
-      out += escHTML(src.slice(last, m.index));
+    while ((m = C_RE.exec(text))) {
       var cls = null;
       for (var g = 1; g <= 6; g++) { if (m[g] !== undefined) { cls = C_CLS[g]; break; } }
-      out += '<span class="' + cls + '">' + escHTML(m[0]) + "</span>";
-      last = C_RE.lastIndex;
+      out.push({ start: m.index, end: C_RE.lastIndex, cls: cls });
       if (m[0] === "") C_RE.lastIndex++;   // evita bucle infinito ante match vacío
     }
-    out += escHTML(src.slice(last));
+    return out;
+  }
+
+  // resaltado de sintaxis C "de siempre" (usado por Código/Codigo). Sin interpretar ¡¡/¿¿/≤≥.
+  function highlightC(src) {
+    var out = "", last = 0;
+    cSpans(src).forEach(function (s) {
+      out += escHTML(src.slice(last, s.start)) + '<span class="' + s.cls + '">' +
+             escHTML(src.slice(s.start, s.end)) + "</span>";
+      last = s.end;
+    });
+    return out + escHTML(src.slice(last));
+  }
+
+  // resaltado de sintaxis C + zonas ≤ID…≥ (solo para el panel de código del Reproductor).
+  // Paso A: separar zonas reusando parseRuns línea por línea (≤/≥ no existen en C real, así que
+  // el marcado es inequívoco). Paso B: sintaxis C vía cSpans sobre el texto ya limpio. Paso C:
+  // merge por dos punteros -> un solo <span> plano por tramo mínimo, combinando ambas clases.
+  function highlightCZonas(src) {
+    var zoneStack = [], offset = 0, zRuns = [], texto = "";
+    var lines = src.split("\n");   // NUNCA prep(): ~~ es un NOT-NOT válido en C
+    for (var i = 0; i < lines.length; i++) {
+      parseRuns(lines[i], zoneStack).forEach(function (r) {
+        zRuns.push({ start: offset, end: offset + r.t.length, zn: r.zn });
+        offset += r.t.length; texto += r.t;
+      });
+      if (i < lines.length - 1) {
+        zRuns.push({ start: offset, end: offset + 1, zn: zoneStack.slice() });   // el salto de línea
+        offset += 1; texto += "\n";
+      }
+    }
+    var sMatches = cSpans(texto);
+    var cortes = {}; zRuns.forEach(function (r) { cortes[r.start] = cortes[r.end] = 1; });
+    sMatches.forEach(function (s) { cortes[s.start] = cortes[s.end] = 1; });
+    var pts = Object.keys(cortes).map(Number).sort(function (a, b) { return a - b; });
+    var out = "", zi = 0, si = 0;
+    for (var p = 0; p < pts.length - 1; p++) {
+      var s0 = pts[p], s1 = pts[p + 1];
+      if (s0 >= s1) continue;
+      while (zRuns[zi] && zRuns[zi].end <= s0) zi++;
+      while (sMatches[si] && sMatches[si].end <= s0) si++;
+      var zn = (zRuns[zi] && zRuns[zi].start <= s0) ? zRuns[zi].zn : [];
+      var cls = (sMatches[si] && sMatches[si].start <= s0) ? sMatches[si].cls : null;
+      var chunk = escHTML(texto.slice(s0, s1));
+      var classes = (cls ? [cls] : []).concat(zn.length ? ["d-zona-box"] : []);
+      if (classes.length) {
+        out += '<span class="' + classes.join(" ") + '"' + (zn.length ? ' data-zona="' + zn.join(" ") + '"' : "") + '>' + chunk + "</span>";
+      } else out += chunk;
+    }
     return out;
   }
 
@@ -1088,8 +1269,14 @@
           .map(function (f) { var pp = f.split(":"); return [(pp[0] || "").trim(), (pp[1] || "").trim()]; });
         return D.struct(fields, rest || null);   // rest = nombre del registro (título opcional)
       }
-      case "leer": return D.input(rest);
-      case "escribir": return D.output(rest);
+      case "leer": {
+        var mIn = rest.match(/^([\s\S]*?)\s+desde\s+([\s\S]+)$/i);
+        return mIn ? D.input(mIn[1].trim(), mIn[2].trim()) : D.input(rest);
+      }
+      case "escribir": {
+        var mOut = rest.match(/^([\s\S]*?)\s+hacia\s+([\s\S]+)$/i);
+        return mOut ? D.output(mOut[1].trim(), mOut[2].trim()) : D.output(rest);
+      }
       case "invocar": { var c = callParts(rest); return D.invoke(c.name, c.args); }
       case "inicio": return D.marker("I");
       case "fin": return D.marker("F");

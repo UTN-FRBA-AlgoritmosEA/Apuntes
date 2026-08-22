@@ -1,0 +1,437 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>16. Máximos y mínimos 2</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>16. Máximos y mínimos 2</h1>
+<p class="nota">Asociando valores y contando repeticiones.</p>
+
+<p>Ya sabemos buscar un máximo dentro de una secuencia. Ahora vamos a usar el mismo patrón para dos
+variantes: <b>asociar</b> un valor extra al máximo que encontramos, y <b>contar</b> cuántas veces se
+repite.</p>
+
+<h2>El enunciado</h2>
+
+<blockquote>Dada una secuencia de nombres de jugador y cantidad de goles, indicar quién hizo más
+goles. La secuencia termina con un jugador de nombre "FIN". Asumir que hay solo un jugador con
+mayor cantidad de goles.</blockquote>
+
+<h2>Análisis</h2>
+
+<p>Es una búsqueda de máximo como la que ya conocemos, pero esta vez no alcanza con guardar el
+número de goles: también hay que recordar <b>de quién</b> son. Agregamos una variable
+<code>maxNombre</code>, que se actualiza junto con <code>máximo</code> cada vez que aparece un nuevo
+récord.</p>
+
+<p>La lectura cambia un poco: cada jugador trae <b>dos</b> datos, nombre y goles, pero el corte de
+la secuencia se decide <b>solo</b> con el nombre —si es <code>"FIN"</code>, ni siquiera tiene
+sentido pedir los goles, porque no es un jugador real—. Por eso <code>leer goles</code> va como
+primera instrucción <b>adentro</b> del cuerpo del <code>mientras</code>: a esa altura ya sabemos que
+el nombre es válido (si no lo fuera, ni habríamos entrado al cuerpo), así que no hace falta ninguna
+decisión extra para decidir si leerlo o no.</p>
+
+<p>Como es la primera vez que usamos texto en un algoritmo, necesitamos declarar <code>nombre</code>
+y <code>maxNombre</code> como <code>string</code>, y agregar <code>#include &lt;string&gt;</code> en
+el código C++ (además de <code>&lt;iostream&gt;</code>, que por sí solo no garantiza soporte para
+<code>string</code>).</p>
+
+<p>Veámoslo corriendo paso a paso, con dos casos: uno con datos y otro con la secuencia vacía:</p>
+
+<script>Reproductor({
+  diagrama: `
+    programaprincipal {
+      locales {
+        string nombre
+        int goles
+        int máximo
+        string maxNombre
+        bool hayMáximo
+      }
+      ≤03hayMáximo≥ := ≤03NO≥
+      leer ≤01≤02nombre≥≥
+      mientras ≤04nombre != "FIN"≥ {
+        leer ≤05≤06goles≥≥
+        si ≤07!hayMáximo || goles > máximo≥ {
+          ≤08máximo≥ := ≤08goles≥
+          ≤09maxNombre≥ := ≤09nombre≥
+          ≤10hayMáximo≥ := ≤10SÍ≥
+        }
+        leer ≤11≤12nombre≥≥
+      }
+      si ≤13hayMáximo≥ {
+        escribir ≤14maxNombre≥
+      } sino {
+        escribir ≤15"No hay datos"≥
+      }
+    }
+  `,
+  código: `
+    int main() {
+        string nombre;
+        int goles;
+        int máximo;
+        string maxNombre;
+        bool hayMáximo;
+
+        ≤03hayMáximo = false;≥
+        ≤01cout << "Ingrese el nombre del jugador (FIN para cortar): ";≥
+        ≤02cin >> nombre;≥
+        while (≤04nombre != "FIN"≥) {
+            ≤05cout << "Ingrese la cantidad de goles: ";≥
+            ≤06cin >> goles;≥
+            if (≤07!hayMáximo || goles > máximo≥) {
+                ≤08máximo = goles;≥
+                ≤09maxNombre = nombre;≥
+                ≤10hayMáximo = true;≥
+            }
+            ≤11cout << "Ingrese el nombre del jugador (FIN para cortar): ";≥
+            ≤12cin >> nombre;≥
+        }
+        if (≤13hayMáximo≥) {
+            ≤14cout << "El jugador con más goles es " << maxNombre << endl;≥
+        } else {
+            ≤15cout << "No hay datos" << endl;≥
+        }
+
+        ≤16return 0;≥
+    }
+  `
+}, {
+  "con datos": [
+    { expresiones:{ "nombre":{}, "goles":{}, "máximo":{}, "maxNombre":{}, "hayMáximo":{} } },
+    { zona:3, expresiones:{ "hayMáximo":"NO" } },
+    { zona:1, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:2, expresiones:{ "nombre":'"Giovani"' }, salida:"Giovani\n" },
+
+    { zona:4 },
+    { zona:5, salida:"Ingrese la cantidad de goles: " },
+    { zona:6, expresiones:{ "goles":1 }, salida:"1\n" },
+    { zona:7 },
+    { zona:8, expresiones:{ "máximo":1 } },
+    { zona:9, expresiones:{ "maxNombre":'"Giovani"' } },
+    { zona:10, expresiones:{ "hayMáximo":"SÍ" } },
+    { zona:11, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:12, expresiones:{ "nombre":'"Lisandro"' }, salida:"Lisandro\n" },
+
+    { zona:4 },
+    { zona:5, salida:"Ingrese la cantidad de goles: " },
+    { zona:6, expresiones:{ "goles":1 }, salida:"1\n" },
+    { zona:7 },
+    { zona:11, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:12, expresiones:{ "nombre":'"Cristian"' }, salida:"Cristian\n" },
+
+    { zona:4 },
+    { zona:5, salida:"Ingrese la cantidad de goles: " },
+    { zona:6, expresiones:{ "goles":1 }, salida:"1\n" },
+    { zona:7 },
+    { zona:11, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:12, expresiones:{ "nombre":'"Lionel"' }, salida:"Lionel\n" },
+
+    { zona:4 },
+    { zona:5, salida:"Ingrese la cantidad de goles: " },
+    { zona:6, expresiones:{ "goles":8 }, salida:"8\n" },
+    { zona:7 },
+    { zona:8, expresiones:{ "máximo":8 } },
+    { zona:9, expresiones:{ "maxNombre":'"Lionel"' } },
+    { zona:10 },
+    { zona:11, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:12, expresiones:{ "nombre":'"Alexis"' }, salida:"Alexis\n" },
+
+    { zona:4 },
+    { zona:5, salida:"Ingrese la cantidad de goles: " },
+    { zona:6, expresiones:{ "goles":1 }, salida:"1\n" },
+    { zona:7 },
+    { zona:11, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:12, expresiones:{ "nombre":'"Julián"' }, salida:"Julián\n" },
+
+    { zona:4 },
+    { zona:5, salida:"Ingrese la cantidad de goles: " },
+    { zona:6, expresiones:{ "goles":1 }, salida:"1\n" },
+    { zona:7 },
+    { zona:11, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:12, expresiones:{ "nombre":'"Enzo"' }, salida:"Enzo\n" },
+
+    { zona:4 },
+    { zona:5, salida:"Ingrese la cantidad de goles: " },
+    { zona:6, expresiones:{ "goles":2 }, salida:"2\n" },
+    { zona:7 },
+    { zona:11, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:12, expresiones:{ "nombre":'"Lautaro"' }, salida:"Lautaro\n" },
+
+    { zona:4 },
+    { zona:5, salida:"Ingrese la cantidad de goles: " },
+    { zona:6, expresiones:{ "goles":3 }, salida:"3\n" },
+    { zona:7 },
+    { zona:11, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:12, expresiones:{ "nombre":'"FIN"' }, salida:"FIN\n" },
+
+    { zona:4 },
+
+    { zona:13 },
+    { zona:14, salida:"El jugador con más goles es Lionel\n" },
+    { zona:[16,"F"] }
+  ],
+  "sin datos": [
+    { expresiones:{ "nombre":{}, "goles":{}, "máximo":{}, "maxNombre":{}, "hayMáximo":{} } },
+    { zona:3, expresiones:{ "hayMáximo":"NO" } },
+    { zona:1, salida:"Ingrese el nombre del jugador (FIN para cortar): " },
+    { zona:2, expresiones:{ "nombre":'"FIN"' }, salida:"FIN\n" },
+
+    { zona:4 },
+
+    { zona:13 },
+    { zona:15, salida:"No hay datos\n" },
+    { zona:[16,"F"] }
+  ]
+}, { consola:{ lineas:6 } })</script>
+
+<p>Una aclaración más: igual que <code>máximo</code>, <code>maxNombre</code> solo tiene un valor
+válido si <code>hayMáximo</code> vale <code>SÍ</code>; antes de eso, no hay ningún candidato con qué
+compararla.</p>
+
+<p>Un detalle técnico sobre <code>cin &gt;&gt; nombre</code>: al leer así un <code>string</code>,
+<code>cin</code> corta en el primer espacio en blanco —por eso, en esta secuencia, los nombres tienen
+que ser una sola palabra (no podríamos leer "Lionel Messi" de un tirón)—. Para leer una frase entera
+existe <code>getline()</code>, pero no lo vamos a explicar por ahora.</p>
+
+<h2>Contando repeticiones</h2>
+
+<blockquote>Dada una secuencia de notas de alumnos (terminada en 0) informar cuál es la nota máxima
+y cuántas veces se repite.</blockquote>
+
+<p>Acá no asociamos un valor sino un <b>contador</b>: <code>cantMáximo</code>. Aparece un caso nuevo,
+además de "hay un nuevo máximo" y "no supera al máximo": que el número sea <b>igual</b> al máximo
+actual —ahí no cambia el candidato, pero sí hay que sumar uno al contador—:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+si !hayMáximo || número > máximo {
+  # encontramos un máximo
+  máximo := número
+  # como es la primera vez, el contador queda en 1
+  cantMáximo := 1
+  hayMáximo := SÍ
+} sino {
+  si número == máximo {
+    # el máximo se repite
+    cantMáximo += 1
+  }
+}
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+if (!hayMáximo || número > máximo) {
+    // encontramos un máximo
+    máximo = número;
+    // como es la primera vez, el contador queda en 1
+    cantMáximo = 1;
+    hayMáximo = true;
+} else if (número == máximo) {
+    // el máximo se repite
+    cantMáximo += 1;
+}
+`</script>
+  </div>
+</div>
+
+<p>Veamos el programa entero andando, con la secuencia <b>6, 6, 6, 5, 8, 3, 9, 9, 0</b> —la nota
+máxima es 9 y se repite 2 veces—. Fijate cómo <code>cantMáximo</code> se <b>reinicia</b> cada vez que
+aparece un máximo nuevo: pasa de 3 a 1 al llegar el 8, y de nuevo a 1 al llegar el 9:</p>
+
+<script>Reproductor({
+  diagrama: `
+    programaprincipal {
+      locales {
+        int número
+        int máximo
+        int cantMáximo
+        bool hayMáximo
+      }
+      ≤03hayMáximo≥ := ≤03NO≥
+      ≤04cantMáximo≥ := ≤040≥
+      leer ≤01≤02número≥≥
+      mientras ≤05número != 0≥ {
+        si ≤06!hayMáximo || número > máximo≥ {
+          ≤07máximo≥ := ≤07número≥
+          ≤08cantMáximo≥ := ≤081≥
+          ≤09hayMáximo≥ := ≤09SÍ≥
+        } sino {
+          si ≤10número == máximo≥ {
+            ≤11cantMáximo≥ += ≤111≥
+          }
+        }
+        leer ≤12≤13número≥≥
+      }
+      si ≤14hayMáximo≥ {
+        escribir ≤15máximo≥, ≤16cantMáximo≥
+      } sino {
+        escribir ≤17"No hay datos"≥
+      }
+    }
+  `,
+  código: `
+    int main() {
+        int número;
+        int máximo;
+        int cantMáximo;
+        bool hayMáximo;
+
+        ≤03hayMáximo = false;≥
+        ≤04cantMáximo = 0;≥
+        ≤01cout << "Ingrese una nota (0 para cortar): ";≥
+        ≤02cin >> número;≥
+        while (≤05número != 0≥) {
+            if (≤06!hayMáximo || número > máximo≥) {
+                ≤07máximo = número;≥
+                ≤08cantMáximo = 1;≥
+                ≤09hayMáximo = true;≥
+            } else if (≤10número == máximo≥) {
+                ≤11cantMáximo += 1;≥
+            }
+            ≤12cout << "Ingrese una nota (0 para cortar): ";≥
+            ≤13cin >> número;≥
+        }
+        if (≤14hayMáximo≥) {
+            ≤15cout << "La nota máxima es " << máximo << endl;≥
+            ≤16cout << "Se repite " << cantMáximo << " veces" << endl;≥
+        } else {
+            ≤17cout << "No hay datos" << endl;≥
+        }
+
+        ≤18return 0;≥
+    }
+  `
+}, [
+  { expresiones:{ "número":{}, "máximo":{}, "cantMáximo":{}, "hayMáximo":{} } },
+  { zona:3, expresiones:{ "hayMáximo":"NO" } },
+  { zona:4, expresiones:{ "cantMáximo":0 } },
+  { zona:1, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:2, expresiones:{ "número":6 }, salida:"6\n" },
+
+  { zona:5 },
+  { zona:6 },
+  { zona:7, expresiones:{ "máximo":6 } },
+  { zona:8, expresiones:{ "cantMáximo":1 } },
+  { zona:9, expresiones:{ "hayMáximo":"SÍ" } },
+  { zona:12, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:13, expresiones:{ "número":6 }, salida:"6\n" },
+
+  { zona:5 },
+  { zona:6 },
+  { zona:10 },
+  { zona:11, expresiones:{ "cantMáximo":2 } },
+  { zona:12, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:13, expresiones:{ "número":6 }, salida:"6\n" },
+
+  { zona:5 },
+  { zona:6 },
+  { zona:10 },
+  { zona:11, expresiones:{ "cantMáximo":3 } },
+  { zona:12, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:13, expresiones:{ "número":5 }, salida:"5\n" },
+
+  { zona:5 },
+  { zona:6 },
+  { zona:10 },
+  { zona:12, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:13, expresiones:{ "número":8 }, salida:"8\n" },
+
+  { zona:5 },
+  { zona:6 },
+  { zona:7, expresiones:{ "máximo":8 } },
+  { zona:8, expresiones:{ "cantMáximo":1 } },
+  { zona:9 },
+  { zona:12, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:13, expresiones:{ "número":3 }, salida:"3\n" },
+
+  { zona:5 },
+  { zona:6 },
+  { zona:10 },
+  { zona:12, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:13, expresiones:{ "número":9 }, salida:"9\n" },
+
+  { zona:5 },
+  { zona:6 },
+  { zona:7, expresiones:{ "máximo":9 } },
+  { zona:8, expresiones:{ "cantMáximo":1 } },
+  { zona:9 },
+  { zona:12, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:13, expresiones:{ "número":9 }, salida:"9\n" },
+
+  { zona:5 },
+  { zona:6 },
+  { zona:10 },
+  { zona:11, expresiones:{ "cantMáximo":2 } },
+  { zona:12, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:13, expresiones:{ "número":0 }, salida:"0\n" },
+
+  { zona:5 },
+
+  { zona:14 },
+  { zona:15, salida:"La nota máxima es 9\n" },
+  { zona:16, salida:"Se repite 2 veces\n" },
+  { zona:[18,"F"] }
+], { consola:{ lineas:6 } })</script>
+
+<h2>¿Necesito <code>hayMáximo</code> y <code>cantMáximo</code> juntas?</h2>
+
+<p>No es estrictamente necesario: cuando <code>hayMáximo</code> es <code>NO</code>,
+<code>cantMáximo</code> vale <code>0</code>; cuando es <code>SÍ</code>, vale <code>1</code> o más. Se
+puede sacar <code>hayMáximo</code> y usar <code>cantMáximo == 0</code> como equivalente de
+<code>!hayMáximo</code>:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+cantMáximo := 0
+leer número
+mientras número != 0 {
+  si cantMáximo == 0 || número > máximo {
+    máximo := número
+    cantMáximo := 1
+  } sino {
+    si número == máximo {
+      cantMáximo += 1
+    }
+  }
+  leer número
+}
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+cantMáximo = 0;
+cout << "Ingrese una nota (0 para cortar): ";
+cin >> número;
+while (número != 0) {
+    if (cantMáximo == 0 || número > máximo) {
+        máximo = número;
+        cantMáximo = 1;
+    } else if (número == máximo) {
+        cantMáximo += 1;
+    }
+    cout << "Ingrese una nota (0 para cortar): ";
+    cin >> número;
+}
+`</script>
+  </div>
+</div>
+
+<p>Las dos soluciones están bien —usá la que te resulte más cómoda—.</p>
+
+<hr>
+<p class="nota"><a class="volver" href="../index.html">← Índice</a></p>
+
+</body>
+</html>

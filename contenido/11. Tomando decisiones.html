@@ -105,60 +105,86 @@ int main() {
 <p>Como un mismo programa se comporta distinto según los datos que reciba vamos a crear tres
 conjuntos de datos para probar los tres caminos posibles sobre el mismo diagrama:</p>
 
-<script>Reproductor(`
-  programaprincipal {
-    locales {
-      int capacidad
-      int alumnos
-      int diferencia
-    }
-    leer ≤01capacidad≥, ≤02alumnos≥
-    ≤03diferencia≥ := ≤03capacidad - alumnos≥
-    si ≤04diferencia > 0≥ {
-      escribir ≤05"sobran ",~~diferencia,~~" asientos"≥
-    } sino {
-      si ≤06diferencia < 0≥ {
-        escribir ≤07"faltan ",~~-diferencia,~~" asientos"≥
+<script>Reproductor({
+  diagrama: `
+    programaprincipal {
+      locales {
+        int capacidad
+        int alumnos
+        int diferencia
+      }
+      leer ≤01≤02capacidad≥≥, ≤03≤04alumnos≥≥
+      ≤05diferencia≥ := ≤05capacidad - alumnos≥
+      si ≤06diferencia > 0≥ {
+        escribir ≤07"sobran ",~~diferencia,~~" asientos"≥
       } sino {
-        escribir ≤08"entran justito"≥
+        si ≤08diferencia < 0≥ {
+          escribir ≤09"faltan ",~~-diferencia,~~" asientos"≥
+        } sino {
+          escribir ≤10"entran justito"≥
+        }
       }
     }
-  }
-`, {
+  `,
+  código: `
+    int main() {
+        int capacidad;
+        int alumnos;
+        int diferencia;
+
+        ≤01cout << "Ingrese la capacidad del aula: ";≥
+        ≤02cin >> capacidad;≥
+        ≤03cout << "Ingrese la cantidad de alumnos: ";≥
+        ≤04cin >> alumnos;≥
+
+        ≤05diferencia = capacidad - alumnos;≥
+
+        ≤06if (diferencia > 0) {≥
+            ≤07cout << "sobran " << diferencia << " asientos" << endl;≥
+        ≤08} else if (diferencia < 0) {≥
+            ≤09cout << "faltan " << -diferencia << " asientos" << endl;≥
+        } else {
+            ≤10cout << "entran justito" << endl;≥
+        }
+
+        ≤11return 0;≥
+    }
+  `
+}, {
   "sobran asientos": [
     { expresiones:{ "capacidad":{}, "alumnos":{}, "diferencia":{} } },
     { zona:1, salida:"Ingrese la capacidad del aula: " },
-    { zona:1, expresiones:{ "capacidad":40 }, salida:"40\n" },
-    { zona:2, salida:"Ingrese la cantidad de alumnos: " },
-    { zona:2, expresiones:{ "alumnos":25 }, salida:"25\n" },
-    { zona:3, expresiones:{ "diferencia":15 } },
-    { zona:4 },
-    { zona:5, salida:"sobran 15 asientos\n" },
-    { zona:"F" }
+    { zona:2, expresiones:{ "capacidad":40 }, salida:"40\n" },
+    { zona:3, salida:"Ingrese la cantidad de alumnos: " },
+    { zona:4, expresiones:{ "alumnos":25 }, salida:"25\n" },
+    { zona:5, expresiones:{ "diferencia":15 } },
+    { zona:6 },
+    { zona:7, salida:"sobran 15 asientos\n" },
+    { zona:[11,"F"] }
   ],
   "faltan asientos": [
     { expresiones:{ "capacidad":{}, "alumnos":{}, "diferencia":{} } },
     { zona:1, salida:"Ingrese la capacidad del aula: " },
-    { zona:1, expresiones:{ "capacidad":30 }, salida:"30\n" },
-    { zona:2, salida:"Ingrese la cantidad de alumnos: " },
-    { zona:2, expresiones:{ "alumnos":42 }, salida:"42\n" },
-    { zona:3, expresiones:{ "diferencia":-12 } },
-    { zona:4 },
+    { zona:2, expresiones:{ "capacidad":30 }, salida:"30\n" },
+    { zona:3, salida:"Ingrese la cantidad de alumnos: " },
+    { zona:4, expresiones:{ "alumnos":42 }, salida:"42\n" },
+    { zona:5, expresiones:{ "diferencia":-12 } },
     { zona:6 },
-    { zona:7, salida:"faltan 12 asientos\n" },
-    { zona:"F" }
+    { zona:8 },
+    { zona:9, salida:"faltan 12 asientos\n" },
+    { zona:[11,"F"] }
   ],
   "entran justo": [
     { expresiones:{ "capacidad":{}, "alumnos":{}, "diferencia":{} } },
     { zona:1, salida:"Ingrese la capacidad del aula: " },
-    { zona:1, expresiones:{ "capacidad":30 }, salida:"30\n" },
-    { zona:2, salida:"Ingrese la cantidad de alumnos: " },
-    { zona:2, expresiones:{ "alumnos":30 }, salida:"30\n" },
-    { zona:3, expresiones:{ "diferencia":0 } },
-    { zona:4 },
+    { zona:2, expresiones:{ "capacidad":30 }, salida:"30\n" },
+    { zona:3, salida:"Ingrese la cantidad de alumnos: " },
+    { zona:4, expresiones:{ "alumnos":30 }, salida:"30\n" },
+    { zona:5, expresiones:{ "diferencia":0 } },
     { zona:6 },
-    { zona:8, salida:"entran justito\n" },
-    { zona:"F" }
+    { zona:8 },
+    { zona:10, salida:"entran justito\n" },
+    { zona:[11,"F"] }
   ]
 }, { consola:{ lineas:4 } })</script>
 
@@ -185,7 +211,10 @@ error «sobran 0 asientos» en vez de «entran justito». Probar el borde es lo 
 clase de errores; los valores del medio casi nunca los muestran.</p>
 
 <hr>
-<p class="nota"><a class="volver" href="../index.html">← Índice</a></p>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="12.%20Tipos%20de%20datos%20b%C3%A1sicos.html">Siguiente: Tipos de datos básicos →</a>
+</div>
 
 </body>
 </html>
