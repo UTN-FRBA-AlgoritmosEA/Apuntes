@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>19. Alcance</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>19. Alcance</h1>
+<p class="nota">Visibilidad o ámbito de las variables y los símbolos en general.</p>
+
+<p>Ya vimos que las variables, las constantes y los subprogramas son todos <b>símbolos</b> de un
+programa. Ahora toca responder algo que dejamos pendiente: ¿desde dónde puede nombrarse cada
+símbolo? Eso lo define su <b>alcance</b> —también llamado <b>ámbito</b>—, y aplica por igual a
+cualquier tipo de símbolo, no solo a las variables.</p>
+
+<h2>Local o global</h2>
+
+<p>Un símbolo puede tener alcance <b>global</b> o <b>local</b>. Uno <b>global</b> puede accederse
+desde cualquier lado del programa; uno <b>local</b> tiene su alcance restringido al lugar donde fue
+definido.</p>
+
+<p>La regla es simple: para que un símbolo sea global, tiene que definirse <b>afuera de cualquier
+bloque</b> (<code>{}</code>). Si lo definimos <b>adentro</b> de un bloque, su alcance queda
+restringido a ese bloque:</p>
+
+<script>Código`
+int contador;   // declarado afuera de cualquier bloque: alcance global
+
+int main() {
+    int local;  // declarado dentro del bloque de main: alcance local a ese bloque
+    ...
+}
+`</script>
+
+<p>Hasta ahora, cada vez que declaramos una variable lo hicimos siempre adentro de un bloque —el de
+un programa principal o el de un subprograma—, así que todas las variables que usamos hasta acá
+fueron <b>locales</b>: desde afuera de ese bloque, no se puede acceder a ellas.</p>
+
+<p>Usar variables locales no es solamente una buena práctica: es la forma <b>correcta</b> de usar
+variables. Las variables globales tienen un uso excepcional, y en general están desaconsejadas,
+porque generan <b>acoplamiento</b> y <b>estado compartido</b> —difícil de seguir— y efectos de lado
+indeseados.</p>
+
+<p>El <b>acoplamiento</b> es indeseado porque cada dependencia entre símbolos —subprogramas,
+variables, lo que sea— hace que un cambio en una parte del programa pueda afectar a otra, dificultando
+modificarla, reutilizarla o probarla. A veces el acoplamiento es inevitable, pero hay que tratar de
+reducirlo al mínimo, y mantener esas dependencias lo más simples y explícitas posible.</p>
+
+<p>Un ejemplo de acoplamiento que ya venimos usando, sin llamarlo por su nombre: <code>cin</code> y
+<code>cout</code> no son parámetros de nuestros subprogramas, pero los usamos directamente, y generan
+un efecto de lado —el usuario ingresa algo, o algo sale por pantalla—. Esto no es necesariamente
+malo, como venimos viendo, pero en sistemas reales hay que tratar de minimizarlo, y acotarlo a
+ciertas partes del programa.</p>
+
+<p>A diferencia de las variables, a las <b>constantes</b> sí tiene sentido declararlas con alcance
+global: por naturaleza no tienen efecto de lado —son constantes—, y así evitamos repetirlas por todos
+lados.</p>
+
+<p>Y a los <b>subprogramas</b>, si diseñamos bien su contrato, también podemos darles alcance
+global: eso nos permite usarlos donde los necesitemos, sabiendo que no van a afectar nada por fuera
+de lo que su contrato dice que hacen.</p>
+
+<h2>Duración de las variables</h2>
+
+<p>El alcance no es lo único que distingue a una variable global de una local: también difiere su
+<b>duración</b>, es decir, cuánto tiempo existe y ocupa lugar en memoria.</p>
+
+<p>Las variables globales tienen <b>duración estática</b>: su almacenamiento queda reservado durante
+<b>toda</b> la ejecución del programa. Su ubicación en memoria queda determinada desde antes de que
+empiece a ejecutarse cualquier subprograma, y permanece disponible durante toda la ejecución.</p>
+
+<p>Las variables locales, en cambio, tienen <b>duración automática</b>: se crean recién al empezar a
+ejecutarse el bloque que las contiene —ese es el momento en que pasan a ocupar almacenamiento—, y
+dejan de existir en cuanto ese bloque termina.</p>
+
+<p>Vale la pena remarcar que esto es una cuestión distinta del alcance: el <b>alcance</b> determina
+<b>desde dónde</b> puede nombrarse una variable; la <b>duración</b> determina <b>durante cuánto
+tiempo</b> existe y ocupa almacenamiento.</p>
+
+<p>Esto nos lleva directo al próximo tema: el <b>contexto de ejecución</b>.</p>
+
+<hr>
+<p class="nota"><a class="volver" href="../index.html">← Índice</a></p>
+
+</body>
+</html>

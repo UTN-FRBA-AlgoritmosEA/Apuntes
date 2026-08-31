@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>04. Símbolos y variables</title>
+<title>04. Símbolos, identificadores y variables</title>
 <script src="../dialecto.js"></script>
 <link rel="stylesheet" href="../estilos/apunte.css">
 <script src="../estilos/apunte.js" defer></script>
@@ -12,29 +12,36 @@
 
 <a class="volver" href="../index.html">← Índice</a>
 
-<h1>04. Símbolos y variables</h1>
+<h1>04. Símbolos, identificadores y variables</h1>
 <p class="nota">Cómo le ponemos nombre a las piezas de un programa, y los dos primeros nombres que usaremos.</p>
 
 <p>Antes dijimos que un proceso maneja datos que cambian a cada instante. Para poder trabajar con esos
 datos —leerlos, combinarlos, cambiarlos— primero necesitamos <b>nombrarlos</b>. Y no solo a los datos:
-a lo largo de un programa les vamos poniendo nombre a muchas cosas. Cada uno de esos nombres es un
+a lo largo de un programa les vamos poniendo nombre a muchas cosas. Cada una de las cosas que nombramos es un
 <b>símbolo</b>.</p>
 
 <h2>Qué es un símbolo</h2>
 
-<p>Un <b>símbolo</b> es un <b>nombre</b> que usamos para referirnos a algo dentro del programa. En
-lugar de andar con direcciones de memoria o con valores sueltos, les damos un nombre y los manejamos a
-través de él. Los símbolos son, en el fondo, la forma en que las personas nombramos las piezas con las
-que está hecho un programa.</p>
+<p>Un <b>símbolo</b> es una <b>entidad</b> dentro del programa, con identidad propia, que puede ser
+referida a través de un <b>identificador</b>.</p>
 
 <p>Hay <b>distintos tipos de símbolos</b> —empezando por las <b>variables</b> y las <b>constantes</b>
-que vemos en este tema—, y los vamos a ir conociendo a lo largo de la materia. Pero hay algo que vale
-para todos por igual: las reglas para ponerles nombre.</p>
+que vemos en este tema—, y los vamos a ir conociendo a lo largo de la materia.</p>
 
-<h2>Reglas para los nombres</h2>
+<p>Puede haber varios símbolos con el mismo identificador: se desambiguan a partir de su
+<b>alcance</b>, un concepto que vamos a ver más adelante.</p>
 
-<p>Cada lenguaje tiene sus propias reglas sobre qué nombres son válidos para un símbolo, y nosotros nos
-vamos a regir por las de <b>C</b>. Dicho de manera simple, un nombre válido en C:</p>
+<h2>Qué es un identificador</h2>
+
+<p>Un <b>identificador</b> es un <b>nombre</b> que usamos para referirnos a algo dentro del programa.
+En lugar de andar con direcciones de memoria o con valores sueltos, les damos un nombre y los
+manejamos a través de él. Los identificadores son, en el fondo, la forma en que las personas
+nombramos las piezas con las que está hecho un programa.</p>
+
+<h2>Reglas para los identificadores</h2>
+
+<p>Cada lenguaje tiene sus propias reglas sobre qué identificadores son válidos, y nosotros nos vamos
+a regir por las de <b>C</b>. Dicho de manera simple, un identificador válido en C:</p>
 
 <ul>
   <li>se forma con <b>letras</b>, <b>dígitos</b> y el <b>guión bajo</b> (<code>_</code>);</li>

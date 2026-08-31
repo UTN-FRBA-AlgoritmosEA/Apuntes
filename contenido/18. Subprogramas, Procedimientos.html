@@ -1,0 +1,467 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>18. Subprogramas: Procedimientos</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>18. Subprogramas: Procedimientos</h1>
+<p class="nota">Organización y reutilización de código.</p>
+
+<p>Hasta ahora, cada programa que escribimos resuelve un problema puntual de punta a punta. Pero
+dentro de un mismo programa es común que una misma tarea se repita más de una vez. Ahora nos toca
+ver cómo <b>organizar</b> el código para poder <b>reutilizarlo</b> en esos casos.</p>
+
+<h2>El enunciado</h2>
+
+<blockquote>Dados dos números enteros <i>a</i> y <i>b</i>, mostrar:
+<ul>
+  <li><i>a</i> elevado a la potencia de <i>b</i></li>
+  <li><i>b</i> elevado a la potencia de <i>a</i></li>
+</ul>
+</blockquote>
+
+<h2>Análisis</h2>
+
+<p>Sin profundizar demasiado, armamos la solución repitiendo multiplicaciones:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+programaprincipal {
+  locales {
+    int a
+    int b
+    int a_b
+    int b_a
+    int i
+  }
+  leer ¡¡g|a¡¡, ¡¡o|b¡¡
+  a_b := 1
+  para i de 1 a ¡¡o|b¡¡ {
+    a_b := a_b * ¡¡g|a¡¡
+  }
+  escribir a_b
+  b_a := 1
+  para i de 1 a ¡¡g|a¡¡ {
+    b_a := b_a * ¡¡o|b¡¡
+  }
+  escribir b_a
+}
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a;
+    int b;
+    int a_b;
+    int b_a;
+    int i;
+
+    cout << "Ingrese a: ";
+    cin >> a;
+    cout << "Ingrese b: ";
+    cin >> b;
+
+    a_b = 1;
+    for (i = 1; i <= b; i += 1) {
+        a_b = a_b * a;
+    }
+    cout << a_b << endl;
+
+    b_a = 1;
+    for (i = 1; i <= a; i += 1) {
+        b_a = b_a * b;
+    }
+    cout << b_a << endl;
+
+    return 0;
+}
+`</script>
+  </div>
+</div>
+
+<p>En el diagrama resaltamos en verde <code>a</code> y en naranja <code>b</code>: estamos haciendo
+<b>dos veces lo mismo</b> —calcular una potencia—, y lo único que cambia entre un bloque y el otro
+son las variables con las que operamos. Tiene sentido, entonces, aislar el algoritmo que resuelve
+la potencia para poder usarlo simplemente dos veces.</p>
+
+<h2>Aislando el algoritmo</h2>
+
+<p>Identificamos que, conociendo la <b>base</b> y el <b>exponente</b>, la potencia se calcula y se
+muestra así:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+potencia := 1
+para i de 1 a exponente {
+  potencia := potencia * base
+}
+escribir potencia
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+potencia = 1;
+for (i = 1; i <= exponente; i += 1) {
+    potencia = potencia * base;
+}
+cout << potencia << endl;
+`</script>
+  </div>
+</div>
+
+<h2>El procedimiento</h2>
+
+<p>Habiendo aislado el algoritmo que se repite, para poder invocarlo cuando lo necesitemos hace
+falta darle un <b>nombre</b> y decir cuáles son los <b>datos</b> que necesita para funcionar. En
+este caso <code>CalcularYMostrarPotencia</code> es un nombre descriptivo de lo que hace, y los
+datos que necesita son la base y el exponente:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+procedimiento CalcularYMostrarPotencia(int base, int exponente) {
+  locales {
+    int potencia
+    int i
+  }
+  potencia := 1
+  para i de 1 a exponente {
+    potencia := potencia * base
+  }
+  escribir potencia
+}
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+void CalcularYMostrarPotencia(int base, int exponente) {
+    int potencia;
+    int i;
+
+    potencia = 1;
+    for (i = 1; i <= exponente; i += 1) {
+        potencia = potencia * base;
+    }
+    cout << potencia << endl;
+}
+`</script>
+  </div>
+</div>
+
+<p>El <b>encabezado</b> cumple dos roles: describe cómo se usa el procedimiento —en un rato lo
+invocamos— y sirve como punto de entrada del algoritmo. La marca <code>R</code> del final es el
+<b>indicador de retorno</b>: dice dónde termina este algoritmo, y que la ejecución continúa donde
+se había quedado el algoritmo que lo invocó. En el código, esto se traduce con <code>void</code>
+—que todavía no explicamos del todo; lo vamos a terminar de ver más adelante—.</p>
+
+<p>Los datos que recibe el procedimiento se llaman <b>parámetros</b>, y los usamos dentro del
+procedimiento con el nombre que tienen en el encabezado (<code>base</code>, <code>exponente</code>).
+Pero todavía no tienen ningún valor concreto: eso pasa recién cuando se invoca el procedimiento con
+valores reales.</p>
+
+<h2>Invocando el procedimiento</h2>
+
+<p>Para invocar el procedimiento tenemos que llamarlo por su nombre y pasarle los datos que
+necesita:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`invocar CalcularYMostrarPotencia(a, b)`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`CalcularYMostrarPotencia(a, b);`</script>
+  </div>
+</div>
+
+<p>Del lado de la invocación, estos datos se llaman <b>argumentos</b>. Esos datos se pasan
+<b>por copia</b> o <b>por referencia</b> para que el subprograma pueda trabajar con ellos. Que se
+pasen por copia significa que el valor del argumento se copia a una variable distinta —el
+parámetro—; qué significa pasar por referencia lo vamos a explicar más adelante.</p>
+
+<p>En la invocación de arriba, cuando la ejecución salta a <code>CalcularYMostrarPotencia</code>,
+<code>base</code> copia el valor de <i>a</i> y <code>exponente</code> copia el valor de <i>b</i>.</p>
+
+<p>Prestá atención a lo siguiente: en el encabezado del procedimiento, los parámetros incluyen el
+<b>tipo de dato</b> que esperan —tiene sentido, porque es el propio subprograma el que define qué
+espera—. Los argumentos, en la invocación, <b>no</b> incluyen el tipo: sería redundante (ya lo
+definió el subprograma) y, además, no se puede cambiar.</p>
+
+<p>Otra cosa importante: como en la invocación no se nombran los parámetros, el <b>orden</b> de los
+argumentos tiene que coincidir con el orden de los parámetros. En este ejemplo, cuando los
+argumentos son <code>a, b</code>, <i>a</i> es <code>base</code> y <i>b</i> es <code>exponente</code>;
+cuando son <code>b, a</code>, es al revés.</p>
+
+<h2>El programa completo</h2>
+
+<p>Veamos el programa completo corriendo, con dos casos de prueba: uno con <i>a</i>: 2, <i>b</i>: 3,
+y otro con <i>a</i>: 3, <i>b</i>: 0. Como el programa ahora tiene más de un subprograma, a la
+izquierda de las expresiones aparece una <b>pila de contextos</b> —como el call stack de un
+depurador—: muestra en qué subprograma está la ejecución en cada momento, y desde dónde se llegó
+ahí.</p>
+
+<script>Reproductor({
+  principal: {
+    diagrama: `
+      programaprincipal {
+        locales {
+          int a
+          int b
+        }
+        leer ≤01≤02a≥≥, ≤03≤04b≥≥
+        invocar ≤05CalcularYMostrarPotencia≥(≤05a, b≥)
+        invocar ≤06CalcularYMostrarPotencia≥(≤06b, a≥)
+      }
+    `,
+    código: `
+      int main() {
+          int a;
+          int b;
+
+          ≤01cout << "Ingrese a: ";≥
+          ≤02cin >> a;≥
+          ≤03cout << "Ingrese b: ";≥
+          ≤04cin >> b;≥
+          ≤05CalcularYMostrarPotencia(a, b);≥
+          ≤06CalcularYMostrarPotencia(b, a);≥
+
+          ≤07return 0;≥
+      }
+    `
+  },
+  CalcularYMostrarPotencia: {
+    diagrama: `
+      procedimiento CalcularYMostrarPotencia(int base, int exponente) {
+        locales {
+          int potencia
+          int i
+        }
+        ≤01potencia≥ := ≤011≥
+        para ≤03≤05i≥≥ de ≤021≥ a ≤03exponente≥ {
+          ≤04potencia≥ := ≤04potencia * base≥
+        }
+        escribir ≤06potencia≥
+      }
+    `,
+    código: `
+      void CalcularYMostrarPotencia(int base, int exponente) {
+          int potencia;
+          int i;
+
+          ≤01potencia = 1;≥
+          for (≤02i = 1≥; ≤03i <= exponente≥; ≤05i += 1≥) {
+              ≤04potencia = potencia * base;≥
+          }
+          ≤06cout << potencia << endl;≥
+      ≤07}≥
+    `
+  }
+}, {
+  "a: 2, b: 3": [
+    { stack:{ nombre:"main", subprograma:"principal" }, expresiones:{ "a":{}, "b":{} } },
+    { zona:1, salida:"Ingrese a: " },
+    { zona:2, expresiones:{ "a":2 }, salida:"2\n" },
+    { zona:3, salida:"Ingrese b: " },
+    { zona:4, expresiones:{ "b":3 }, salida:"3\n" },
+
+    { stack:{ nombre:"CalcularYMostrarPotencia(2, 3)", zona:5, subprograma:"CalcularYMostrarPotencia" },
+      expresiones:{ "base":2, "exponente":3, "potencia":{}, "i":{} } },
+    { zona:1, expresiones:{ "potencia":1 } },
+    { zona:2, expresiones:{ "i":1 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":2 } },
+    { zona:5, expresiones:{ "i":2 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":4 } },
+    { zona:5, expresiones:{ "i":3 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":8 } },
+    { zona:5, expresiones:{ "i":4 } },
+    { zona:3 },
+    { zona:6, salida:"8\n" },
+    { zona:[7,"R"] },
+    { stack:null },
+
+    { stack:{ nombre:"CalcularYMostrarPotencia(3, 2)", zona:6, subprograma:"CalcularYMostrarPotencia" },
+      expresiones:{ "base":3, "exponente":2, "potencia":{}, "i":{} } },
+    { zona:1, expresiones:{ "potencia":1 } },
+    { zona:2, expresiones:{ "i":1 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":3 } },
+    { zona:5, expresiones:{ "i":2 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":9 } },
+    { zona:5, expresiones:{ "i":3 } },
+    { zona:3 },
+    { zona:6, salida:"9\n" },
+    { zona:[7,"R"] },
+    { stack:null },
+
+    { zona:[7,"F"] }
+  ],
+  "a: 3, b: 0": [
+    { stack:{ nombre:"main", subprograma:"principal" }, expresiones:{ "a":{}, "b":{} } },
+    { zona:1, salida:"Ingrese a: " },
+    { zona:2, expresiones:{ "a":3 }, salida:"3\n" },
+    { zona:3, salida:"Ingrese b: " },
+    { zona:4, expresiones:{ "b":0 }, salida:"0\n" },
+
+    { stack:{ nombre:"CalcularYMostrarPotencia(3, 0)", zona:5, subprograma:"CalcularYMostrarPotencia" },
+      expresiones:{ "base":3, "exponente":0, "potencia":{}, "i":{} } },
+    { zona:1, expresiones:{ "potencia":1 } },
+    { zona:2, expresiones:{ "i":1 } },
+    { zona:3 },
+    { zona:6, salida:"1\n" },
+    { zona:[7,"R"] },
+    { stack:null },
+
+    { stack:{ nombre:"CalcularYMostrarPotencia(0, 3)", zona:6, subprograma:"CalcularYMostrarPotencia" },
+      expresiones:{ "base":0, "exponente":3, "potencia":{}, "i":{} } },
+    { zona:1, expresiones:{ "potencia":1 } },
+    { zona:2, expresiones:{ "i":1 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":0 } },
+    { zona:5, expresiones:{ "i":2 } },
+    { zona:3 },
+    { zona:4 },
+    { zona:5, expresiones:{ "i":3 } },
+    { zona:3 },
+    { zona:4 },
+    { zona:5, expresiones:{ "i":4 } },
+    { zona:3 },
+    { zona:6, salida:"0\n" },
+    { zona:[7,"R"] },
+    { stack:null },
+
+    { zona:[7,"F"] }
+  ]
+}, { consola:{ lineas:6 } })</script>
+
+<p>Recorré la grabación tocando en cada línea de la pila de contextos para ver en qué quedó cada
+uno: probá tocar <code>main</code> mientras la ejecución está adentro de
+<code>CalcularYMostrarPotencia</code>, para ver dónde quedó <b>suspendida</b> la ejecución del
+programa principal, esperando a que el procedimiento termine.</p>
+
+<p>Una aclaración sobre los controles del reproductor: antes de que existieran los subprogramas,
+<b>avanzar y entrar</b> y <b>avanzar y saltear</b> hacían exactamente lo mismo —avanzar un solo
+paso—, mientras que <b>avanzar hasta salir</b> directamente saltaba al final de toda la grabación,
+porque no había ningún subprograma del que salir antes. Ahora que tenemos subprogramas, los tres
+cobran un sentido propio y distinto: <b>avanzar y entrar</b> avanza un solo paso, así que si ese
+paso es una invocación, te mete adentro del subprograma invocado, paso a paso; <b>avanzar y
+saltear</b> ejecuta esa invocación <b>completa</b> de un solo salto, sin mostrarte lo que pasa
+adentro, y te deja justo después de que termine; y <b>avanzar hasta salir</b> avanza de un salto
+hasta que el subprograma en el que estás parado ahora mismo termina, volviendo a quien lo
+invocó.</p>
+
+<h2>El contrato</h2>
+
+<p>El <b>contrato</b> de un subprograma define qué espera de quien lo invoca, y qué puede esperar
+quien lo invoca de él. Parte de ese contrato queda expresada directamente en el código; otra parte
+queda por fuera, en documentación o en lo que se puede inferir del contexto.</p>
+
+<p>Tomemos como ejemplo el encabezado <code>CalcularYMostrarPotencia(int base, int exponente)</code>.
+Ahí ya podemos leer que espera dos números enteros, y que hace algo con ellos —pero nada más—. Los
+<b>identificadores</b> cumplen acá un rol clave, nombrando tanto al procedimiento como a cada
+parámetro: <code>CalcularYMostrarPotencia</code> nos cuenta que no solo calcula la potencia, sino que
+además la muestra —si lo que quisiéramos fuera solo calcularla, este procedimiento no nos serviría—;
+<code>base</code> y <code>exponente</code> nos dicen qué significa cada uno de los números que
+recibe: aunque los dos sean del mismo tipo, cumplen roles muy distintos en el cálculo de la
+potencia.</p>
+
+<p>El contrato puede ser bastante más extenso que eso, y suele completarse con documentación que
+precise cosas como:</p>
+
+<ul>
+  <li><b>precondiciones</b>: cómo tienen que venir los datos de entrada;</li>
+  <li><b>postcondiciones</b>: qué garantiza el subprograma después de ejecutarse;</li>
+  <li><b>efectos secundarios</b>: qué otras cosas modifica, por fuera de su resultado;</li>
+  <li><b>errores o excepciones</b>: qué puede salir mal, y qué pasa en ese caso.</li>
+</ul>
+
+<p>Volviendo a nuestro procedimiento: la precondición sería que <code>exponente</code> sea positivo
+o <code>0</code>; el efecto secundario, que escribe por pantalla (algo que ya queda claro en el
+nombre, con ese "Mostrar"); y como errores posibles: qué pasa si se incumple la precondición de
+exponente positivo o <code>0</code>, en cuyo caso mostraría <code>1</code>, que no es correcto, o que
+la potencia calculada supere el tamaño de un <code>int</code>, en cuyo caso el resultado directamente
+va a estar mal.</p>
+
+<p>Como programadores es importante dejar todo lo más claro posible, para que quien lea nuestro
+código pueda resolver cualquier duda que le surja. Dicho esto, en el contexto de enunciados simples
+como los que venimos resolviendo podemos omitir lo que resulte obvio —como hicimos recién con las
+precondiciones y los errores de este mismo ejemplo—, pero siempre comunicando apropiadamente lo que
+estamos resolviendo.</p>
+
+<h2>Modularización</h2>
+
+<p>A la acción de dividir un algoritmo en partes más pequeñas, cada una con una responsabilidad
+determinada, la llamamos <b>modularización</b>. Cada una de esas partes constituye un <b>módulo</b>,
+y el algoritmo completo se construye a partir de la interacción entre ellos.</p>
+
+<p>El objetivo no es dividir por dividir, sino encontrar una organización que haga que el algoritmo
+sea más fácil de entender, modificar y reutilizar.</p>
+
+<p>La diferencia entre un subprograma y un módulo es que el primero encapsula una tarea puntual,
+mientras que un módulo agrupa elementos relacionados entre sí —tipos de datos, subprogramas,
+constantes, etc.—.</p>
+
+<h2>¿Hasta dónde modularizar?</h2>
+
+<p>No existe una cantidad "correcta" de funciones para un programa. Modularizar consiste en
+encontrar un nivel de división que haga que el programa sea más fácil de entender, modificar,
+probar y reutilizar.</p>
+
+<p>Si una función hace demasiadas cosas, conviene dividirla. Por ejemplo, una función que lee
+datos, calcula un resultado, valida varias condiciones y además muestra información por pantalla
+probablemente tenga responsabilidades que puedan separarse.</p>
+
+<p>Pero dividir una función no siempre la mejora. Si terminamos creando funciones diminutas que
+solo contienen una o dos instrucciones y que únicamente se utilizan desde un único lugar, podemos
+hacer que el programa sea más difícil de seguir: para entender una operación sencilla hay que saltar
+entre muchas funciones.</p>
+
+<p>Una buena regla práctica es preguntarnos:</p>
+
+<ul>
+  <li>¿Esta función tiene una responsabilidad reconocible?</li>
+  <li>¿Puedo describir lo que hace con una frase sencilla?</li>
+  <li>¿Tiene un contrato claro?</li>
+  <li>¿La separación hace más fácil entender o modificar el programa?</li>
+  <li>¿La función que queda resulta más simple que antes?</li>
+</ul>
+
+<p>Si al extraer el subprograma conseguimos que tanto el algoritmo original como el nuevo tengan un
+propósito claro, probablemente la división tenga sentido. Si, en cambio, solo estamos repartiendo
+unas pocas instrucciones entre varias funciones sin ganar claridad, probablemente hayamos
+modularizado demasiado.</p>
+
+<p>En definitiva, la modularización es una herramienta, no un objetivo. No buscamos tener muchas
+funciones, sino módulos con responsabilidades bien delimitadas y relaciones sencillas entre
+ellos.</p>
+
+<h2>Subprogramas y alcance</h2>
+
+<p>Cerramos con algo importante: los subprogramas son, igual que las variables y las constantes,
+símbolos de un programa. Por eso la visibilidad de su identificador —el nombre que les dimos—
+también está sujeta al alcance que tenga, un concepto que vamos a ver a continuación.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="19.%20Alcance.html">Siguiente: Alcance →</a>
+</div>
+
+</body>
+</html>

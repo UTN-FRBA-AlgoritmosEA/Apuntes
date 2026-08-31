@@ -1,0 +1,221 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>17. Operadores</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>17. Operadores</h1>
+<p class="nota">Manipulando datos.</p>
+
+<p>Si bien ya los venimos usando, vale la pena parar un rato a analizar qué son y cómo se usan los
+<b>operadores</b>.</p>
+
+<p>Los operadores son elementos sintácticos que permiten realizar operaciones con los datos
+provistos. Lo que nos permitió usarlos sin tener que explicarlos hasta ahora es que los conocemos
+desde la primaria, porque se usan mucho en matemática, pero el mismo concepto aplica en programación
+para cualquier tipo de operación.</p>
+
+<h2>Aridad</h2>
+
+<p>Según el número de <b>operandos</b> (los datos sobre los que opera) que acepte un operador, se
+define su <b>aridad</b>. Los hay <b>unarios</b> (un operando), <b>binarios</b> (dos operandos) y, en
+teoría, <i>n</i>-arios (<i>n</i> operandos) — pero en la gran mayoría de los lenguajes de
+programación existe un único operador de más de dos operandos (lo vemos más adelante, en este mismo
+tema).</p>
+
+<p><b>Operadores binarios</b>: los más conocidos son los aritméticos —suma (<code>+</code>), resta
+(<code>-</code>), multiplicación (<code>*</code>), división (<code>/</code>)—. Toman dos valores,
+uno a la izquierda y otro a la derecha, y hacen la operación correspondiente. Ejemplo:
+<code>1 + 2</code> resulta en <code>3</code>.</p>
+
+<p><b>Operadores unarios</b>: el más conocido es la negación lógica (<code>!</code>). Toman un solo
+valor, y es el propio operador el que define de qué lado (izquierda o derecha) está ese valor. La
+negación toma el de la derecha. Ejemplo: <code>!true</code> resulta en <code>false</code>.</p>
+
+<h2>Operadores aritméticos</h2>
+
+<p>Además de <code>+</code>, <code>-</code>, <code>*</code> y <code>/</code>, existe un quinto
+operador aritmético: el <b>módulo</b> o resto (<code>%</code>), que solo tiene sentido entre
+enteros y da el resto de la división entera. Ejemplo: <code>7 % 2</code> resulta en <code>1</code>
+(7 dividido 2 da 3, y sobra 1).</p>
+
+<p>El <b>tipo del resultado</b> de una operación aritmética depende de los tipos de sus operandos:
+si los dos son <code>int</code>, el resultado es <code>int</code>; si interviene algún
+<code>float</code> o <code>double</code>, el resultado es de coma flotante. Esto importa
+especialmente en la división: <code>7 / 2</code> entre enteros da <code>3</code> (trunca la parte
+decimal), mientras que si alguno de los dos es de coma flotante, <code>7.0 / 2</code> da
+<code>3.5</code>.</p>
+
+<script>Código`
+int a = 7;
+int b = 2;
+cout << a / b << endl;         // 3 — división entera, trunca
+cout << (double)a / b << endl; // 3.5 — a se proyecta a double antes de dividir
+`</script>
+
+<p>Cuando necesitamos forzar una conversión explícita de tipo como la de arriba, se lo llama
+<b>casteo</b> (del inglés <i>cast</i>): <code>(double)a</code> proyecta el valor de <code>a</code> a
+<code>double</code> antes de operar con él.</p>
+
+<p>Por último, <code>+</code> y <code>-</code> también funcionan como operadores <b>unarios</b>,
+para indicar el signo de un literal o de una variable: <code>+1</code>, <code>-1</code>,
+<code>-edad</code>.</p>
+
+<h2>Asignación</h2>
+
+<p>La asignación —que dibujamos con la flecha (<code>⇽</code>) en el diagrama, y con <code>=</code>
+en el código— es también un operador. No solo asigna un valor al operando de la izquierda: además
+<b>devuelve</b> ese mismo valor (el del operando de la derecha) como resultado de la operación.</p>
+
+<p>También existen los <b>operadores de asignación compuesta</b> <code>+=</code>, <code>-=</code>,
+<code>*=</code>, <code>/=</code>, que operan como la operación aritmética correspondiente, pero
+asignando el resultado directamente a la parte izquierda —<code>x += 2</code> equivale a
+<code>x = x + 2</code>—.</p>
+
+<p>Cabe recordar que el operando izquierdo de cualquier asignación debe ser una <b>expresión
+asignable</b> —una variable, no una expresión ya calculada—: <code>x = 5</code> es válido,
+<code>2 + 2 = x</code> no lo es.</p>
+
+<h2>Lógicos</h2>
+
+<p>Ya conocemos <code>&amp;&amp;</code> (y), <code>||</code> (o) y <code>!</code> (no) de antes. Lo
+nuevo acá es que <code>&amp;&amp;</code> y <code>||</code> tienen <b>evaluación perezosa</b>: si el
+resultado ya se puede determinar con el primer operando, el segundo directamente
+<b>no se evalúa</b>.</p>
+
+<ul>
+  <li>En <code>a &amp;&amp; b</code>: si <code>a</code> es falso, el resultado ya es falso sin
+  importar <code>b</code> — no se evalúa <code>b</code>.</li>
+  <li>En <code>a || b</code>: si <code>a</code> es verdadero, el resultado ya es verdadero sin
+  importar <code>b</code> — no se evalúa <code>b</code>.</li>
+</ul>
+
+<p>Esa omisión evita evaluar una expresión que podría dar error. Ejemplo concreto:
+<code>esMúltiplo = divisor != 0 &amp;&amp; número % divisor == 0</code> — si <code>divisor</code>
+vale <code>0</code>, se evita calcular <code>número % divisor</code>, que sería una división por
+cero.</p>
+
+<h2>Comparación</h2>
+
+<p>Los operadores de comparación son <code>==</code>, <code>&lt;</code>, <code>&gt;</code>,
+<code>&lt;=</code> y <code>&gt;=</code>. Vale aclarar algo que suele confundir al principio: la
+comparación por igualdad se escribe con <b>dos</b> signos (<code>==</code>), para distinguirla de la
+asignación (<code>=</code>), que es una operación completamente distinta.</p>
+
+<h2>Incremento</h2>
+
+<p>Los operadores <code>++</code> y <code>--</code> suman o restan <code>1</code> a una variable
+(<code>i++</code> equivale a <code>i += 1</code>). Nosotros preferimos usar siempre <code>+= 1</code>
+y <code>-= 1</code>: son igual de cortos, pero transmiten con más claridad lo que está pasando —le
+estamos sumando o restando 1 a la variable—.</p>
+
+<p>Además, cada uno puede escribirse como <b>prefijo</b> (<code>++total</code>) o como
+<b>postfijo</b> (<code>total++</code>): en los dos casos la variable termina incrementada por igual,
+pero cambia el <b>valor de retorno</b> de la expresión. El prefijo devuelve el valor <b>ya
+incrementado</b>; el postfijo devuelve el valor <b>previo</b> al incremento. Así, si <code>total</code>
+vale <code>1</code>, tanto <code>total++</code> como <code>++total</code> dejan a <code>total</code>
+en <code>2</code>, pero <code>total++</code> devuelve <code>1</code> mientras que <code>++total</code>
+devuelve <code>2</code>:</p>
+
+<script>Código`
+int total = 1;
+cout << total++ << endl; // imprime 1 (el valor previo); total ya vale 2
+
+total = 1;
+cout << ++total << endl; // imprime 2 (el valor ya incrementado); total vale 2
+`</script>
+
+<h2>De bits</h2>
+
+<p>Existen también operadores que trabajan directamente sobre la representación binaria de los
+datos, bit a bit: <code>&amp;</code> (AND), <code>|</code> (OR), <code>^</code> (XOR), <code>~</code>
+(complemento), <code>&lt;&lt;</code> y <code>&gt;&gt;</code> (desplazamiento de bits a izquierda y
+derecha). No los vamos a usar en la materia, así que no profundizamos en ellos.</p>
+
+<p>Vale aclarar algo importante: aunque <code>&amp;</code>/<code>|</code> se parecen visualmente a
+los lógicos <code>&amp;&amp;</code>/<code>||</code>, son operaciones <b>distintas</b> —una opera bit
+a bit sobre toda la representación binaria del dato, la otra opera sobre un valor lógico completo—.
+No hay que confundirlos.</p>
+
+<h2>Decisión</h2>
+
+<p>El operador ternario <code>?:</code> es el operador de tres operandos (<i>n</i>-ario) que
+mencionamos al principio del tema, al hablar de aridad —es, de hecho, el único que existe en la
+gran mayoría de los lenguajes—. Se usa así: <code>condición ? valorSiVerdadero : valorSiFalso</code>.
+Igual que <code>&amp;&amp;</code>/<code>||</code>, también tiene evaluación perezosa: solo evalúa la
+rama que corresponde según la condición.</p>
+
+<script>Código`
+int mayor = (a > b) ? a : b;
+`</script>
+
+<p>No lo vamos a usar en la materia, pero es muy útil en el día a día de quien programa.</p>
+
+<h2>Otros operadores</h2>
+
+<p>Hay más operadores que iremos viendo a medida que avancemos en la materia.</p>
+
+<h2>Agrupación y precedencia</h2>
+
+<p>Los paréntesis (<code>()</code>) permiten agrupar una expresión para forzar un orden de
+evaluación explícito. Sin paréntesis, cada operador tiene una <b>precedencia</b> que determina qué
+se evalúa primero: por ejemplo, <code>2 + 3 * 4</code> da <code>14</code>, no <code>20</code>,
+porque <code>*</code> tiene mayor precedencia que <code>+</code> —se evalúa primero, como en
+matemática—.</p>
+
+<p>La siguiente tabla resume la precedencia de los operadores que vimos en este tema, de mayor a
+menor (los operadores de una misma fila tienen la misma precedencia entre sí):</p>
+
+<table class="tabla-tipos">
+  <thead>
+    <tr><th>Categoría</th><th>Operadores</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Unarios</td><td><code>! + - ++ --</code></td></tr>
+    <tr><td>Multiplicativos</td><td><code>* / %</code></td></tr>
+    <tr><td>Aditivos</td><td><code>+ -</code></td></tr>
+    <tr><td>Desplazamiento de bits</td><td><code>&lt;&lt; &gt;&gt;</code></td></tr>
+    <tr><td>Relacionales</td><td><code>&lt; &gt; &lt;= &gt;=</code></td></tr>
+    <tr><td>Igualdad</td><td><code>== !=</code></td></tr>
+    <tr><td>AND de bits</td><td><code>&amp;</code></td></tr>
+    <tr><td>XOR de bits</td><td><code>^</code></td></tr>
+    <tr><td>OR de bits</td><td><code>|</code></td></tr>
+    <tr><td>AND lógico</td><td><code>&amp;&amp;</code></td></tr>
+    <tr><td>OR lógico</td><td><code>||</code></td></tr>
+    <tr><td>Ternario</td><td><code>?:</code></td></tr>
+    <tr><td>Asignación</td><td><code>= += -= *= /=</code></td></tr>
+  </tbody>
+</table>
+
+<p>Esta tabla no es exhaustiva —C++ tiene más operadores que no vimos en la materia—. Y ante
+cualquier duda, usar paréntesis siempre es válido, y en general más claro que memorizar la tabla.</p>
+
+<h2>Operadores personalizados</h2>
+
+<p>C++ permite <b>sobrecargar</b> operadores: extenderlos para que funcionen también con tipos de
+datos propios. De hecho, ya usamos dos sin darnos cuenta: <code>&lt;&lt;</code> y <code>&gt;&gt;</code>
+con <code>cout</code> y <code>cin</code> —en su forma "de bits" original son desplazamiento, pero la
+biblioteca estándar los sobrecargó para que sirvan para escribir y leer—.</p>
+
+<p>Por ejemplo, si definiéramos un tipo <code>Complejo</code> (con una parte real y otra
+imaginaria), podríamos sobrecargar <code>+</code> para sumar dos complejos entre sí
+(<code>unComplejo + otroComplejo</code>), o incluso un complejo y un número real
+(<code>unComplejo + 1</code>). No lo vamos a hacer en esta materia, pero está bueno saber que se
+puede.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="18.%20Subprogramas,%20Procedimientos.html">Siguiente: Subprogramas: Procedimientos →</a>
+</div>
+
+</body>
+</html>

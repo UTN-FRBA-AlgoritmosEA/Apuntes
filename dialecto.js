@@ -479,7 +479,9 @@
     ".dialecto-repro .d-caso.activo{background:#fbf9f2;border-color:#333;color:#1a1a1a;font-weight:bold;}" +
     ".dialecto-repro .d-repro-bar{display:flex;gap:8px;justify-content:center;align-items:center;margin:2px 0 12px;}" +
     ".dialecto-repro .d-repro-bar button{font:15px Georgia,serif;background:#fbf9f2;border:1px solid #333;" +
-    "border-radius:4px;padding:2px 12px;cursor:pointer;line-height:1.2;}" +
+    "color:#333;border-radius:4px;padding:0;width:34px;height:34px;flex:0 0 34px;cursor:pointer;line-height:1.2;" +
+    "display:inline-flex;align-items:center;justify-content:center;}" +
+    ".dialecto-repro .d-repro-bar button svg{width:18px;height:18px;display:block;}" +
     ".dialecto-repro .d-repro-bar button:hover{background:#f2eede;}" +
     ".dialecto-repro .d-repro-bar button:disabled{opacity:.4;cursor:default;}" +
     ".dialecto-repro .d-repro-paso{font-family:Georgia,serif;color:#555;min-width:54px;text-align:center;}" +
@@ -502,6 +504,11 @@
     ".dialecto-repro .d-vista-box .dialecto-code{border:0;border-radius:0;margin:0;}" +
     ".dialecto-repro .dialecto-code{font-size:12px;}" +   // código más chico solo en el Reproductor
     ".dialecto-repro .d-watch-box{overflow:auto;resize:vertical;min-height:40px;border:1px solid #e2d8c0;border-radius:5px;}" +
+    ".dialecto-repro .d-watch-row{display:flex;gap:8px;align-items:stretch;}" +
+    ".dialecto-repro .d-watch-row .d-watch-box{flex:1 1 auto;min-width:0;}" +
+    ".dialecto-repro .d-pila-box{display:flex;flex-direction:column;gap:4px;overflow:auto;" +
+    "min-width:100px;max-width:170px;flex:0 0 auto;}" +
+    ".dialecto-repro .d-pila-box .d-caso{width:100%;text-align:left;}" +
     ".dialecto-repro .d-watch{overflow-x:auto;font:13px/1.5 'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace;color:#2b2b2b;padding:2px 0;}" +
     ".dialecto-repro .d-watch table{border-collapse:collapse;}" +
     ".dialecto-repro .d-w-list{margin:0 auto;}" +
@@ -671,6 +678,42 @@
     return st;
   }
 
+  // Pila de contextos (call stack) hasta el paso i. Mismo patrón "puro" que wEstadoEn: recorre
+  // steps[0..i) desde cero, sin estado persistido entre llamadas. Cada frame: {id, nombre,
+  // subprograma, estado, zona}. stack.zona (en un push) resalta al PADRE (contexto que se deja);
+  // el zona de nivel superior del paso resalta al contexto ACTUAL post push/pop. Las claves de
+  // expresiones "^"/"^^"/... actualizan un ancestro (profundidad = cantidad de "^") sin cambiar
+  // el contexto "actual" de ese mismo paso.
+  function contextosEn(steps, i) {
+    var pila = [], idSeq = 0;
+    for (var k = 0; k < i; k++) {
+      var s = steps[k], viejoTop = pila[pila.length - 1];
+      if (s && s.stack === null) {
+        pila.pop();
+      } else if (s && s.stack) {
+        if (viejoTop && s.stack.zona != null) viejoTop.zona = normZonas(s.stack.zona);
+        var subprog = (s.stack.subprograma != null) ? s.stack.subprograma
+          : (viejoTop ? viejoTop.subprograma : "");
+        pila.push({ id: idSeq++, nombre: s.stack.nombre, subprograma: subprog, estado: {}, zona: [] });
+      }
+      var top = pila[pila.length - 1];
+      if (top && s) {
+        if (s.zona != null) top.zona = normZonas(s.zona);
+        if (s.expresiones) {
+          var normales = {}, hubo = false;
+          Object.keys(s.expresiones).forEach(function (clave) {
+            if (/^\^+$/.test(clave)) {
+              var destino = pila[pila.length - 1 - clave.length];   // "^"=padre, "^^"=abuelo, ...
+              if (destino) destino.estado = wMergeEstado(destino.estado, s.expresiones[clave]);
+            } else { normales[clave] = s.expresiones[clave]; hubo = true; }
+          });
+          if (hubo) top.estado = wMergeEstado(top.estado, normales);
+        }
+      }
+    }
+    return pila;   // orden viejo→nuevo; "más nuevo arriba" se logra recorriendo al revés al mostrar
+  }
+
   // salida de consola acumulada hasta el paso i: se agrega; salida:null borra todo
   function consolaEn(steps, i) {
     var out = "";
@@ -732,19 +775,40 @@
   // instantáneo si no.
   var SCROLL_SUAVE = ("scrollBehavior" in document.documentElement.style);
 
-  function makeRepro(svg, casos, watchEl, consolaEl, codeEl) {
-    var roots = codeEl ? [svg, codeEl] : [svg];
-    var boxes = [].concat.apply([], roots.map(function (r) { return [].slice.call(r.querySelectorAll(".d-zona-box")); }));
+  // diagBox/codeBox/codePre: cajas fijas (nunca cambian de identidad) donde se intercambia el
+  // contenido del subprograma que corresponda mostrar. subprogramas: mapa {clave:{svg,codeHtml,error}}
+  // pre-renderizado una sola vez por Reproductor. modoPila: si algún paso usa "stack".
+  function makeRepro(diagBox, codeBox, codePre, subprogramas, modoPila, casos, watchEl, consolaEl, pilaEl) {
+    var subprogActual = "__nunca__";   // fuerza el primer mostrarSubprograma real
+    var roots = [], boxes = [];
+    function mostrarSubprograma(clave) {
+      if (clave === subprogActual) return;
+      subprogActual = clave;
+      diagBox.innerHTML = "";
+      if (codePre) codePre.innerHTML = "";
+      roots = []; boxes = [];
+      if (clave == null) return;   // sin contexto todavía: caja vacía
+      var sp = subprogramas[clave];
+      if (!sp) return;             // clave desconocida (error del autor): caja vacía, no rompe
+      if (sp.error) {
+        var eb = document.createElement("div"); eb.className = "dialecto-error";
+        eb.textContent = "Error de dibujo: " + sp.error;
+        diagBox.appendChild(eb);
+      } else if (sp.svg) diagBox.appendChild(sp.svg);
+      if (codePre) codePre.innerHTML = sp.codeHtml || "";
+      roots = (codePre && sp.codeHtml && sp.svg) ? [sp.svg, codePre] : (sp.svg ? [sp.svg] : []);
+      boxes = [].concat.apply([], roots.map(function (r) { return [].slice.call(r.querySelectorAll(".d-zona-box")); }));
+    }
+
     var pos = casos.map(function (c) { return c.pasos.length ? 1 : 0; });   // última posición por caso (memoria)
-    var ctrl = { caso: 0, timer: null };
+    var ctrl = { caso: 0, timer: null, pila: [], ctxSel: null };
     function steps() { return casos[ctrl.caso].pasos; }
     function minI() { return steps().length ? 1 : 0; }   // el 1er paso ES el inicio (sin estado vacío previo)
     ctrl.i = pos[0];
     function limpiar() { for (var k = 0; k < boxes.length; k++) boxes[k].classList.remove("activa"); }
-    function aplicarZonas(step) {
-      // filtra sobre `boxes` (ya cacheado, cubre svg + código) en vez de re-consultar el DOM:
-      // así un mismo id resalta simultáneamente diagrama y código.
-      var ids = normZonas(step && step.zona);
+    function aplicarZonasDirect(ids) {
+      // filtra sobre `boxes` (ya cacheado, cubre svg + código del subprograma visible) en vez de
+      // re-consultar el DOM: así un mismo id resalta simultáneamente diagrama y código.
       for (var k = 0; k < boxes.length; k++) {
         var bz = (boxes[k].getAttribute("data-zona") || "").split(/\s+/);
         for (var a = 0; a < ids.length; a++) {
@@ -772,12 +836,21 @@
         }
       });
     }
-    function pintarExpr() {
+    function pintarExpr(ctx) {
       if (!watchEl) return;
-      var S = steps(), mi = minI();
       watchEl.innerHTML = "";
-      var prevI = (ctrl.i <= mi) ? ctrl.i : ctrl.i - 1;   // el inicio no resalta cambios (se compara consigo mismo)
-      var t = wPanel(wEstadoEn(S, ctrl.i), wEstadoEn(S, prevI));
+      var actual, previo;
+      if (modoPila) {
+        actual = ctx ? ctx.estado : {};
+        var prevI = (ctrl.i <= minI()) ? ctrl.i : ctrl.i - 1;
+        var ctxPrev = ctx ? contextosEn(steps(), prevI).filter(function (c) { return c.id === ctx.id; })[0] : null;
+        previo = ctxPrev ? ctxPrev.estado : {};
+      } else {
+        var S = steps(), mi = minI();
+        var prevI2 = (ctrl.i <= mi) ? ctrl.i : ctrl.i - 1;   // el inicio no resalta cambios (se compara consigo mismo)
+        actual = wEstadoEn(S, ctrl.i); previo = wEstadoEn(S, prevI2);
+      }
+      var t = wPanel(actual, previo);
       if (t) watchEl.appendChild(t);
     }
     function pintarConsola() {
@@ -786,20 +859,95 @@
       if (out) out.textContent = consolaEn(steps(), ctrl.i);
       consolaEl.scrollTop = consolaEl.scrollHeight;   // auto-scroll al final
     }
+    function pintarPila() {
+      if (!pilaEl) return;
+      pilaEl.innerHTML = "";
+      ctrl.pila.slice().reverse().forEach(function (c) {   // más nuevo arriba
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "d-caso" + (c.id === ctrl.ctxSel ? " activo" : "");
+        b.textContent = c.nombre; b.title = c.nombre;
+        b.onclick = function () { ctrl.seleccionarContexto(c.id); };
+        pilaEl.appendChild(b);
+      });
+    }
+    var seMostroAlgunaVez = false;
+    function repintarTodo() {
+      var ctx = null, huboZona = false;
+      if (modoPila) {
+        ctx = ctrl.pila.filter(function (c) { return c.id === ctrl.ctxSel; })[0] || null;
+        mostrarSubprograma(ctx ? ctx.subprograma : null);
+        limpiar();
+        if (ctx && ctx.zona.length) { aplicarZonasDirect(ctx.zona); huboZona = true; }
+      } else {
+        mostrarSubprograma("");
+        limpiar();
+        var mi = minI(), S = steps();
+        if (ctrl.i > mi) {
+          aplicarZonasDirect(normZonas(S[ctrl.i - 1] && S[ctrl.i - 1].zona));
+          huboZona = true;
+        }
+      }
+      if (!seMostroAlgunaVez && diagBox.querySelector("svg, .dialecto-error")) {
+        seMostroAlgunaVez = true;
+        if (ctrl.alMostrarContenido) ctrl.alMostrarContenido();   // ajuste de alto, una sola vez
+      }
+      if (huboZona) asegurarVisible();
+      pintarExpr(ctx);
+      pintarConsola();
+      pintarPila();
+    }
     ctrl.total = function () { return steps().length; };
     ctrl.minI = function () { return minI(); };
     ctrl.irA = function (n) {
       var S = steps(), mi = minI();
       ctrl.i = Math.max(mi, Math.min(S.length, n));
-      limpiar();
-      if (ctrl.i > mi) { aplicarZonas(S[ctrl.i - 1]); asegurarVisible(); }   // el inicio (mi) no resalta zonas
-      pintarExpr();
-      pintarConsola();
+      if (modoPila) {
+        var pilaVieja = ctrl.pila || [];
+        var pilaNueva = contextosEn(S, ctrl.i);
+        var topViejo = pilaVieja.length ? pilaVieja[pilaVieja.length - 1].id : null;
+        var topNuevo = pilaNueva.length ? pilaNueva[pilaNueva.length - 1].id : null;
+        var seleccionValida = pilaNueva.some(function (c) { return c.id === ctrl.ctxSel; });
+        if (topViejo !== topNuevo || !seleccionValida) ctrl.ctxSel = topNuevo;
+        ctrl.pila = pilaNueva;
+      }
+      repintarTodo();
       if (ctrl.actualizar) ctrl.actualizar();
+    };
+    ctrl.seleccionarContexto = function (id) {
+      if (!ctrl.pila.some(function (c) { return c.id === id; })) return;
+      ctrl.ctxSel = id;
+      repintarTodo();
     };
     ctrl.inicio = function () { ctrl.pausa(); ctrl.irA(minI()); };
     ctrl.anterior = function () { ctrl.pausa(); ctrl.irA(ctrl.i - 1); };
     ctrl.siguiente = function () { ctrl.irA(ctrl.i + 1); };
+    ctrl.saltear = function () {   // step-over: si el próximo paso abre un contexto, lo salta entero
+      var S = steps(), idx = ctrl.i;
+      if (idx >= S.length) return;
+      if (S[idx] && S[idx].stack) {
+        var profundidad = 1, j = idx + 1;
+        while (j < S.length && profundidad > 0) {
+          if (S[j] && S[j].stack === null) profundidad--;
+          else if (S[j] && S[j].stack) profundidad++;
+          j++;
+        }
+        ctrl.pausa(); ctrl.irA(j);
+      } else {
+        ctrl.siguiente();   // nada que saltar: igual que "avanzar y entrar"
+      }
+    };
+    ctrl.salir = function () {     // step-out: avanza hasta el stack:null que cierra el contexto actual
+      var S = steps(), profundidad = 0, j = ctrl.i;
+      for (; j < S.length; j++) {
+        if (S[j] && S[j].stack === null) {
+          if (profundidad === 0) { j++; break; }
+          profundidad--;
+        } else if (S[j] && S[j].stack) {
+          profundidad++;
+        }
+      }
+      ctrl.pausa(); ctrl.irA(j);   // si nunca hay stack:null, el loop llega al final -> va al final
+    };
     ctrl.pausa = function () {
       if (ctrl.timer) { clearInterval(ctrl.timer); ctrl.timer = null; }
       if (ctrl.onplay) ctrl.onplay(false);
@@ -819,7 +967,8 @@
       ctrl.pausa();
       pos[ctrl.caso] = ctrl.i;   // recordar dónde quedé en el caso actual
       ctrl.caso = c;
-      ctrl.irA(pos[c]);          // continuar donde había dejado el caso destino
+      ctrl.ctxSel = null;   // cada caso tiene su propia pila; fuerza reselección del tope al entrar
+      ctrl.irA(pos[c]);     // continuar donde había dejado el caso destino
       if (ctrl.onCaso) ctrl.onCaso(c);
     };
     return ctrl;
@@ -827,11 +976,18 @@
 
   global.Reproductor = function (primero, steps, config) {
     config = config || {};
-    // 1er parámetro: string (solo diagrama, como antes) u objeto {diagrama, código|codigo}
-    var esObjetoFuente = primero && typeof primero === "object" && !Array.isArray(primero);
-    var diagramaSrc = esObjetoFuente ? primero.diagrama : primero;
-    var tieneCodigo = esObjetoFuente && (primero["código"] != null || primero.codigo != null);
-    var codigoSrc = tieneCodigo ? (primero["código"] != null ? primero["código"] : primero.codigo) : null;
+    // 1er parámetro: string | {diagrama,código|codigo} (un subprograma, clave interna "") |
+    // {nombreSub:{diagrama,código}, ...} (varios subprogramas — se detecta por NO tener la
+    // clave "diagrama", que un {diagrama,código} simple siempre tiene)
+    var esObjeto = primero && typeof primero === "object" && !Array.isArray(primero);
+    var subprogramasSrc;
+    if (esObjeto && !("diagrama" in primero)) {
+      subprogramasSrc = primero;
+    } else {
+      var diagramaSrc = esObjeto ? primero.diagrama : primero;
+      var codigoSrc = esObjeto ? (primero["código"] != null ? primero["código"] : primero.codigo) : null;
+      subprogramasSrc = { "": { diagrama: diagramaSrc, "código": codigoSrc } };
+    }
 
     // 2º parámetro: array (una sola grabación) u objeto {nombre: pasos, ...} (varios "casos")
     var conCasos = steps && !Array.isArray(steps) && typeof steps === "object";
@@ -843,6 +999,27 @@
     else casos = [{ nombre: null, pasos: [] }];
     if (!casos.length) { casos = [{ nombre: null, pasos: [] }]; conCasos = false; }
 
+    // modo pila: se activa si ALGÚN paso de ALGÚN caso trae la clave "stack" (push o pop). Si no,
+    // todo se comporta exactamente igual que antes de esta feature (un solo subprograma fijo).
+    var modoPila = casos.some(function (c) { return c.pasos.some(function (s) { return s && ("stack" in s); }); });
+
+    // pre-renderizar cada subprograma una sola vez (mismo D.parse/D.render/highlightCZonas de
+    // siempre); un error en uno no rompe a los demás, se muestra al seleccionarlo.
+    var subprogramas = {}, tieneCodigoGlobal = false;
+    Object.keys(subprogramasSrc).forEach(function (k) {
+      var e = subprogramasSrc[k] || {};
+      var cSrc = (e["código"] != null ? e["código"] : e.codigo);
+      var sp = { svg: null, codeHtml: null, error: null };
+      try {
+        var r = D.parse(String(e.diagrama == null ? "" : e.diagrama));
+        sp.svg = D.render(r.node);
+        if (r.errors && r.errors.length) sp.error = r.errors.join("\n");
+      } catch (ex) { sp.error = ex.message; }
+      if (cSrc != null) { sp.codeHtml = highlightCZonas(dedent(String(cSrc))); tieneCodigoGlobal = true; }
+      subprogramas[k] = sp;
+    });
+    var huboAlgunSvg = Object.keys(subprogramas).some(function (k) { return subprogramas[k].svg; });
+
     var wrap = document.createElement("div");
     wrap.className = "dialecto-repro";
 
@@ -853,7 +1030,7 @@
     // recuadro Diagrama/Código: con código, un solo borde (como .ejemplo) con las pestañas
     // integradas arriba; sin código, el diagrama queda suelto tal como antes (sin regresión)
     var vistaEl = null, diagTabBtn = null, codeTabBtn = null, vistaBox = wrap;
-    if (tieneCodigo) {
+    if (tieneCodigoGlobal) {
       vistaBox = h("div", "d-vista-box"); wrap.appendChild(vistaBox);
       vistaEl = h("div", "d-vista-tabs");
       diagTabBtn = document.createElement("button");
@@ -864,47 +1041,60 @@
       vistaBox.appendChild(vistaEl);
     }
 
-    var r = D.parse(String(diagramaSrc));
-    var svg = null, diagBox = null;
-    try {
-      svg = D.render(r.node);
-      diagBox = h("div", "d-diag-box"); diagBox.appendChild(svg);   // caja con scroll + resize vertical
-      vistaBox.appendChild(diagBox);
-    }
-    catch (e) {
-      var eb = document.createElement("div"); eb.className = "dialecto-error";
-      eb.textContent = "Error de dibujo: " + e.message; wrap.appendChild(eb);
-    }
-    if (r.errors && r.errors.length) {
-      var er = document.createElement("div"); er.className = "dialecto-error";
-      er.textContent = r.errors.join("\n"); wrap.appendChild(er);
-    }
-
-    // panel de código (opcional): mismas zonas que el diagrama, oculto hasta elegir la pestaña
-    var codeBox = null, codePre = null;
-    if (svg && tieneCodigo) {
-      codePre = document.createElement("pre"); codePre.className = "dialecto-code";
-      codePre.innerHTML = highlightCZonas(dedent(String(codigoSrc)));
-      codeBox = h("div", "d-code-box d-diag-box"); codeBox.appendChild(codePre);
-      codeBox.style.display = "none";   // arranca oculto: la vista por defecto es "Diagrama"
-      vistaBox.appendChild(codeBox);
-    }
-
-    var ctrl = null, watchEl = null;
-    if (svg) {
-      var bar = document.createElement("div"); bar.className = "d-repro-bar";
-      function boton(txt, title) {
-        var x = document.createElement("button");
-        x.type = "button"; x.textContent = txt; x.title = title; return x;
+    // diagBox/codeBox: cajas FIJAS (nunca cambian de identidad); el contenido de cada una se llena
+    // según el subprograma/contexto que corresponda mostrar (makeRepro -> mostrarSubprograma).
+    var diagBox = null, codeBox = null, codePre = null;
+    if (huboAlgunSvg) {
+      diagBox = h("div", "d-diag-box"); vistaBox.appendChild(diagBox);
+      if (tieneCodigoGlobal) {
+        codePre = document.createElement("pre"); codePre.className = "dialecto-code";
+        codeBox = h("div", "d-code-box d-diag-box"); codeBox.appendChild(codePre);
+        codeBox.style.display = "none";   // arranca oculto: la vista por defecto es "Diagrama"
+        vistaBox.appendChild(codeBox);
       }
-      var bIni = boton("⏮", "Inicio"), bPrev = boton("<", "Anterior"),
-          bPlay = boton("▶", "Reproducir"), bNext = boton(">", "Siguiente");
+    } else {
+      var primeraClave = Object.keys(subprogramas)[0];
+      var er0 = subprogramas[primeraClave] ? subprogramas[primeraClave].error : null;
+      var eb = document.createElement("div"); eb.className = "dialecto-error";
+      eb.textContent = "Error de dibujo: " + (er0 || "no se pudo generar el diagrama");
+      wrap.appendChild(eb);
+    }
+
+    var ctrl = null, watchEl = null, pilaEl = null, watchBox = null, watchRow = null,
+        bar = null, consolaEl = null;
+    if (diagBox) {
+      bar = document.createElement("div"); bar.className = "d-repro-bar";
+      function boton(svg, title) {
+        var x = document.createElement("button");
+        x.type = "button"; x.innerHTML = svg; x.title = title; return x;
+      }
+      var SVG_INICIO = '<svg viewBox="0 0 20 20"><rect x="4" y="4" width="2" height="12" fill="currentColor"/><path d="M16 4 L7 10 L16 16 Z" fill="currentColor"/></svg>';
+      var SVG_PLAY = '<svg viewBox="0 0 20 20"><path d="M6 4 L16 10 L6 16 Z" fill="currentColor"/></svg>';
+      var SVG_PAUSA = '<svg viewBox="0 0 20 20"><rect x="6" y="4" width="3" height="12" fill="currentColor"/><rect x="11" y="4" width="3" height="12" fill="currentColor"/></svg>';
+      // "saltear" y "retroceder" son el MISMO dibujo (arco por encima de un punto); retroceder es
+      // el mismo <g> espejado horizontalmente, así quedan garantizados como espejo exacto.
+      var SVG_SALTEAR_CORE = '<circle cx="10" cy="16" r="1.6" fill="currentColor"/>' +
+        '<path d="M4 12 C 4 4, 16 4, 18 12" stroke="currentColor" stroke-width="1.6" fill="none"/>' +
+        '<path d="M19 8 L18 12 L14 11" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+      var SVG_SALTEAR = '<svg viewBox="0 0 20 20">' + SVG_SALTEAR_CORE + '</svg>';
+      var SVG_ATRAS = '<svg viewBox="0 0 20 20"><g transform="scale(-1,1) translate(-20,0)">' + SVG_SALTEAR_CORE + '</g></svg>';
+      var SVG_ENTRAR = '<svg viewBox="0 0 20 20"><circle cx="10" cy="16" r="1.6" fill="currentColor"/>' +
+        '<path d="M10 3 L10 12" stroke="currentColor" stroke-width="1.6"/>' +
+        '<path d="M6.5 8.5 L10 12 L13.5 8.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var SVG_SALIR = '<svg viewBox="0 0 20 20"><circle cx="10" cy="16" r="1.6" fill="currentColor"/>' +
+        '<path d="M10 12 L10 3" stroke="currentColor" stroke-width="1.6"/>' +
+        '<path d="M6.5 6.5 L10 3 L13.5 6.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var bIni = boton(SVG_INICIO, "Volver al comienzo"), bPrev = boton(SVG_ATRAS, "Retroceder"),
+          bPlay = boton(SVG_PLAY, "Reanudar / Pausar"),
+          bOver = boton(SVG_SALTEAR, "Avanzar y saltear"),
+          bNext = boton(SVG_ENTRAR, "Avanzar y entrar"),
+          bOut = boton(SVG_SALIR, "Avanzar hasta salir");
       var paso = document.createElement("span"); paso.className = "d-repro-paso";
       bar.appendChild(bIni); bar.appendChild(bPrev); bar.appendChild(bPlay);
-      bar.appendChild(bNext); bar.appendChild(paso);
+      bar.appendChild(bOver); bar.appendChild(bNext); bar.appendChild(bOut);
+      bar.appendChild(paso);
       wrap.appendChild(bar);
       // consola (opcional): se dibuja solo si config.consola está presente
-      var consolaEl = null;
       if (config.consola) {
         var lineas = config.consola.lineas || 3;
         consolaEl = h("div", "d-consola");
@@ -914,22 +1104,31 @@
         wrap.appendChild(consolaEl);
       }
       watchEl = h("div", "d-watch");
-      var watchBox = h("div", "d-watch-box"); watchBox.appendChild(watchEl); wrap.appendChild(watchBox);
+      watchBox = h("div", "d-watch-box"); watchBox.appendChild(watchEl);
+      if (modoPila) {
+        // columna de contextos a la izquierda de las expresiones (más nuevo arriba)
+        watchRow = h("div", "d-watch-row");
+        pilaEl = h("div", "d-pila-box");
+        watchRow.appendChild(pilaEl); watchRow.appendChild(watchBox);
+        wrap.appendChild(watchRow);
+      } else {
+        wrap.appendChild(watchBox);   // sin pila: igual que siempre, sin envoltorio extra
+      }
 
-      ctrl = makeRepro(svg, casos, watchEl, consolaEl, codePre);
+      ctrl = makeRepro(diagBox, codeBox, codePre, subprogramas, modoPila, casos, watchEl, consolaEl, pilaEl);
       ctrl.onplay = function (on) {
-        bPlay.textContent = on ? "⏸" : "▶";
-        bPlay.title = on ? "Pausar" : "Reproducir";
+        bPlay.innerHTML = on ? SVG_PAUSA : SVG_PLAY;
         wrap.classList.toggle("d-playing", on);   // el cursor titila solo mientras reproduce
       };
       ctrl.actualizar = function () {
         var N = ctrl.total(), mi = ctrl.minI();
         paso.textContent = ctrl.i + " / " + N;
         bIni.disabled = bPrev.disabled = (ctrl.i <= mi);
-        bNext.disabled = (ctrl.i >= N);
+        bNext.disabled = bOver.disabled = bOut.disabled = (ctrl.i >= N);
       };
       bIni.onclick = ctrl.inicio; bPrev.onclick = ctrl.anterior;
       bNext.onclick = ctrl.siguiente; bPlay.onclick = ctrl.play;
+      bOver.onclick = ctrl.saltear; bOut.onclick = ctrl.salir;
 
       // botones de casos (títulos = claves); recuerdan el paso de cada grabación
       if (selEl) {
@@ -952,62 +1151,85 @@
         var vistaH = vistaEl ? vistaEl.offsetHeight : 0;
         var selH = selEl ? selEl.offsetHeight : 0;
         var barH = bar ? bar.offsetHeight : 0;
-        var exprH = watchBox ? watchBox.offsetHeight : 0;
+        var exprH = watchRow ? watchRow.offsetHeight : (watchBox ? watchBox.offsetHeight : 0);
         var consH = consolaEl ? consolaEl.offsetHeight : 0;
         return (global.innerHeight || 800) - vistaH - selH - barH - exprH - consH - 48;
       }
-      // alto estable: reservar el alto máximo del panel de expresiones sobre TODAS las grabaciones
-      var maxH = 0;
+      // alto estable: reservar el alto máximo del panel de expresiones (y de la pila, si aplica)
+      // sobre TODAS las grabaciones y TODOS los contextos que puedan llegar a inspeccionarse
+      // (en modo pila, cada contexto abierto en cada paso es un estado potencialmente visible).
+      var maxH = 0, maxPilaH = 0;
       casos.forEach(function (c) {
         for (var i = 0; i <= c.pasos.length; i++) {
-          watchEl.innerHTML = "";
-          var t = wPanel(wEstadoEn(c.pasos, i), {});
-          if (t) watchEl.appendChild(t);
-          if (watchEl.offsetHeight > maxH) maxH = watchEl.offsetHeight;
+          if (modoPila) {
+            var pilaI = contextosEn(c.pasos, i);
+            pilaI.forEach(function (frame) {
+              watchEl.innerHTML = "";
+              var t = wPanel(frame.estado, {});
+              if (t) watchEl.appendChild(t);
+              if (watchEl.offsetHeight > maxH) maxH = watchEl.offsetHeight;
+            });
+            if (pilaEl) {
+              pilaEl.innerHTML = "";
+              pilaI.forEach(function (frame) {
+                var b = document.createElement("button"); b.className = "d-caso"; b.textContent = frame.nombre;
+                pilaEl.appendChild(b);
+              });
+              if (pilaEl.offsetHeight > maxPilaH) maxPilaH = pilaEl.offsetHeight;
+            }
+          } else {
+            watchEl.innerHTML = "";
+            var t2 = wPanel(wEstadoEn(c.pasos, i), {});
+            if (t2) watchEl.appendChild(t2);
+            if (watchEl.offsetHeight > maxH) maxH = watchEl.offsetHeight;
+          }
         }
       });
       watchEl.style.minHeight = maxH + "px";
-      // alto inicial del diagrama: completo, o el máximo disponible en pantalla
-      // (para poder verlo junto con controles/consola/expresiones)
-      if (diagBox && svg) {
+      if (pilaEl) { pilaEl.innerHTML = ""; pilaEl.style.minHeight = maxPilaH + "px"; }
+
+      // ajuste de alto del diagrama/código: se dispara una sola vez, la primera vez que hay
+      // contenido real (inmediato en modo simple; en modo pila, recién con el primer push).
+      // Después queda estable y compartido entre subprogramas/pestañas (ver mostrarSubprograma).
+      function intentarFit() {
+        var svgActual = diagBox.querySelector("svg");
+        if (!svgActual) return;
         var setDiagH = function (contentH) {   // contentH incluye márgenes del svg
           var a = avail();
           var hInit = (contentH <= a) ? contentH : Math.max(160, a);
           diagBox.style.height = Math.round(hInit) + "px";
-          // el código comparte el mismo alto que el diagrama (medido solo del diagrama), para que
-          // cambiar de pestaña no mueva nada de lo que está debajo; si el código es más alto, scrollea
           if (codeBox) codeBox.style.height = diagBox.style.height;
         };
-        var attrH = parseFloat(svg.getAttribute("height")) || 0;
+        var attrH = parseFloat(svgActual.getAttribute("height")) || 0;
         if (attrH) setDiagH(attrH + 20);   // sincrónico: alto natural aprox (el layout aún no resolvió height:auto)
-        // resize manual (arrastrar el borde de cualquiera de las dos cajas): espejar el alto en la
-        // otra, para que no queden desincronizadas al volver a esa pestaña. La caja oculta
-        // (display:none) no tiene layout propio, así que solo la visible dispara el observer.
-        if (codeBox && global.ResizeObserver) {
-          var syncingH = false;
-          var espejar = function (origen, destino) {
-            return function () {
-              if (syncingH) return;
-              // el cambio de pestaña también dispara el observer (la caja que se oculta "resizea" a
-              // 0): ignorarlo, si no pisa el alto nuevo con el valor viejo de la caja que se esconde
-              if (global.getComputedStyle(origen).display === "none") return;
-              var h = origen.style.height;
-              if (h && destino.style.height !== h) {
-                syncingH = true;
-                destino.style.height = h;
-                syncingH = false;
-              }
-            };
-          };
-          new global.ResizeObserver(espejar(diagBox, codeBox)).observe(diagBox);
-          new global.ResizeObserver(espejar(codeBox, diagBox)).observe(codeBox);
-        }
         if (global.requestAnimationFrame) {
           global.requestAnimationFrame(function () {
             setDiagH(diagBox.scrollHeight || attrH + 20);   // refina con el alto real del contenido
           });
         }
       }
+      // resize manual (arrastrar el borde de cualquiera de las dos cajas): espejar el alto en la
+      // otra, para que no queden desincronizadas al volver a esa pestaña/subprograma. La caja
+      // oculta (display:none) no tiene layout propio, así que solo la visible dispara el observer.
+      if (codeBox && global.ResizeObserver) {
+        var syncingH = false;
+        var espejar = function (origen, destino) {
+          return function () {
+            if (syncingH) return;
+            if (global.getComputedStyle(origen).display === "none") return;
+            var h = origen.style.height;
+            if (h && destino.style.height !== h) {
+              syncingH = true;
+              destino.style.height = h;
+              syncingH = false;
+            }
+          };
+        };
+        new global.ResizeObserver(espejar(diagBox, codeBox)).observe(diagBox);
+        new global.ResizeObserver(espejar(codeBox, diagBox)).observe(codeBox);
+      }
+      ctrl.alMostrarContenido = intentarFit;
+
       function mostrarVista(cual) {
         diagBox.style.display = (cual === "codigo") ? "none" : "";
         if (codeBox) codeBox.style.display = (cual === "codigo") ? "" : "none";
