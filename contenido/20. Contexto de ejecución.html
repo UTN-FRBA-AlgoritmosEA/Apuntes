@@ -1,0 +1,200 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>20. Contexto de ejecución</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>20. Contexto de ejecución</h1>
+<p class="nota">¿Qué estamos haciendo?</p>
+
+<p>Cuando hacemos <b>seguimiento manual</b> de un algoritmo hay varias cosas que vamos teniendo en
+cuenta. Algunas son <b>explícitas</b>: las variables, con su valor en cada momento. Otras son
+<b>implícitas</b>: los valores intermedios que vamos calculando mentalmente, o el punto exacto en
+que estamos parados —por lo general, señalando con el dedo—.</p>
+
+<p>Cuando ejecutamos en una computadora, esta necesita también representar y mantener, de alguna
+forma, toda esa información. Entre las cosas que necesita saber están:</p>
+
+<ul>
+  <li>dónde están las instrucciones que tiene que ejecutar;</li>
+  <li>cuál es la próxima instrucción a ejecutar;</li>
+  <li>dónde están las variables locales que usa;</li>
+  <li>dónde puede guardar valores temporales para lo que está haciendo;</li>
+  <li>adónde tiene que volver una vez que termine.</li>
+</ul>
+
+<p>Toda esa información forma, en conjunto, el <b>contexto de ejecución</b>: describe todo lo que
+necesita la computadora para ejecutar nuestro programa.</p>
+
+<p>Ya vimos que los subprogramas nos ayudan a resolver problemas más grandes dividiéndolos en partes
+más chicas, así que tiene sentido que dividamos no solo el algoritmo, sino también el seguimiento
+que le hacemos. Cuando invocamos a un subprograma, "pausamos" el avance en el que estábamos para
+hacerle seguimiento al invocado —que tiene sus propias instrucciones, variables, punto de ejecución,
+etc.—, y al terminar volvemos al punto donde nos habíamos quedado.</p>
+
+<h2>Pila de llamadas</h2>
+
+<p>Teniendo en cuenta toda esta información, hay varias formas de implementar el contexto de
+ejecución, que además pueden convivir entre sí. La más simple —y suficiente para lo que necesitamos
+acá— es la de <b>pila de llamadas</b> o <i>call stack</i>. Pero sepamos que tanto el compilador como
+las bibliotecas que usemos pueden incorporar implementaciones y optimizaciones distintas.</p>
+
+<p>En una pila de llamadas, cada invocación a un subprograma crea su contexto de ejecución: un
+<b>registro de activación</b> (<i>stack frame</i>) que contiene toda la información para que el
+subprograma se pueda ejecutar. Cada vez que se invoca un subprograma, se suspende la ejecución de
+quien invoca y se coloca un registro nuevo en la pila de llamadas, para que pueda ejecutarse el
+subprograma invocado. Así, esta pila va creciendo a medida que cada subprograma invoca a otro. El
+programa principal funciona como un subprograma más, con la única particularidad de que se invoca
+solo al arrancar el proceso.</p>
+
+<p>Como cada invocación genera un contexto nuevo, el espacio de memoria que necesita cada subprograma
+para sus variables se reserva recién cuando se lo invoca, y se libera cuando termina: por lo tanto,
+solo ocupa espacio real mientras está siendo invocado. Esto también permite que un mismo subprograma
+tenga <b>más de una invocación activa al mismo tiempo</b>, cada una con su propio espacio de
+variables, de manera que modificar una variable local de una ejecución no altera la variable local
+correspondiente de la otra que ocurre en simultáneo. Vamos a ver un poco más de esto cuando hablemos
+de recursividad.</p>
+
+<h2>Los pasos de una invocación</h2>
+
+<p>Estos serían, entonces, los pasos que ocurren al ejecutar un subprograma <i>f</i>:</p>
+
+<ol>
+  <li>Alguien invoca el subprograma <i>f</i>.</li>
+  <li>Se crea un contexto de ejecución para <i>f</i>, con la memoria suficiente para sus variables y
+  otros datos necesarios.</li>
+  <li>Sus variables ahora existen.</li>
+  <li><i>f</i> se ejecuta paso a paso (puede incluso invocar otros subprogramas).</li>
+  <li><i>f</i> termina.</li>
+  <li>Dejan de existir sus variables.</li>
+  <li>Se elimina el contexto.</li>
+  <li>Continúa la ejecución de quien invocó inicialmente.</li>
+</ol>
+
+<h2>Viéndolo en acción</h2>
+
+<p>Acá tenemos un programa principal que invoca a <code>Subprograma1</code>, que invoca a
+<code>Subprograma2</code>, que escribe "Hola" por pantalla. Como excepción —algo que normalmente no
+vamos a mostrar—, en este ejemplo entramos incluso a la "implementación" de la instrucción
+<code>escribir</code>, para dejar en claro que hasta las instrucciones más básicas tienen, por
+debajo, su propia ejecución con su propio contexto.</p>
+
+<p>Ejecutá paso a paso y fijate cómo se crea cada contexto a medida que se invoca, y cómo cada uno
+tiene sus propias variables: notá en particular que <code>Subprograma1</code> también tiene una
+variable <code>x</code>, distinta de la <code>x</code> del programa principal —mismo nombre, pero
+otro contexto, con su propio espacio de memoria—.</p>
+
+<script>Reproductor({
+  principal: {
+    diagrama: `
+      programaprincipal {
+        locales {
+          int x
+        }
+        ≤01x≥ := ≤011≥
+        invocar ≤02Subprograma1≥()
+      }
+    `,
+    código: `
+      int main() {
+          int x;
+
+          ≤01x = 1;≥
+          ≤02Subprograma1();≥
+
+          ≤03return 0;≥
+      }
+    `
+  },
+  Subprograma1: {
+    diagrama: `
+      procedimiento Subprograma1() {
+        locales {
+          int x
+          int y
+        }
+        ≤01x≥ := ≤012≥
+        ≤02y≥ := ≤023≥
+        invocar ≤03Subprograma2≥()
+      }
+    `,
+    código: `
+      void Subprograma1() {
+          int x;
+          int y;
+
+          ≤01x = 2;≥
+          ≤02y = 3;≥
+          ≤03Subprograma2();≥
+      ≤04}≥
+    `
+  },
+  Subprograma2: {
+    diagrama: `
+      procedimiento Subprograma2() {
+        locales {
+          int y
+        }
+        ≤01y≥ := ≤014≥
+        escribir ≤02"Hola"≥
+      }
+    `,
+    código: `
+      void Subprograma2() {
+          int y;
+
+          ≤01y = 4;≥
+          ≤02cout << "Hola" << endl;≥
+      ≤03}≥
+    `
+  },
+  EscribirImpl: {
+    diagrama: `# acá iría la implementación de escribir`,
+    código: `// acá iría la implementación de escribir`
+  }
+}, [
+  { stack:{ nombre:"main", subprograma:"principal" }, expresiones:{ "x":{} } },
+  { zona:1, expresiones:{ "x":1 } },
+
+  { stack:{ nombre:"Subprograma1()", zona:2, subprograma:"Subprograma1" },
+    expresiones:{ "x":{}, "y":{} } },
+  { zona:1, expresiones:{ "x":2 } },
+  { zona:2, expresiones:{ "y":3 } },
+
+  { stack:{ nombre:"Subprograma2()", zona:3, subprograma:"Subprograma2" },
+    expresiones:{ "y":{} } },
+  { zona:1, expresiones:{ "y":4 } },
+
+  { stack:{ nombre:'escribir("Hola")', zona:2, subprograma:"EscribirImpl" },
+    expresiones:{ "textoAEscribir":'"Hola"' } },
+  { stack:null, salida:"Hola\n" },
+
+  { zona:[3,"R"] },
+  { stack:null },
+
+  { zona:[4,"R"] },
+  { stack:null },
+
+  { zona:[3,"F"] }
+], { consola:{ lineas:4 } })</script>
+
+<p>Recorré la grabación tocando en cada línea de la pila de contextos: podés ver, por ejemplo, dónde
+quedó <b>suspendida</b> la ejecución de <code>Subprograma1</code> mientras la ejecución está adentro
+de <code>Subprograma2</code>, esperando a que termine.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="21.%20Funciones.html">Siguiente: Funciones →</a>
+</div>
+
+</body>
+</html>

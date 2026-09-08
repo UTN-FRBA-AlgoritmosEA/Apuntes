@@ -263,26 +263,39 @@
     var mg = 6;                                          // margen del círculo respecto de arriba
     sized(node, function () {
       var cc = measure(counter), bb = measure(begin), ee = measure(end), b = body.size();
-      var contentW = Math.max(cc.w, bb.w + ee.w + PAD);
-      var d = Math.max(contentW, 2 * LINE_H) + 2 * PAD;   // diámetro del círculo
-      d = Math.round(d * 1.12);
+      var contentW = Math.max(cc.w, bb.w + ee.w + 2 * PAD);
+      var d = Math.max(contentW, 2 * LINE_H + 2 * PAD) + 2 * PAD;   // diámetro del círculo
       var boxH = Math.max(d + 2 * mg, b.h + 2 * PAD);   // margen arriba y abajo del círculo
       var bodyW = d / 2 + PAD + b.w + PAD;                // deja lugar libre bajo el círculo
-      return { w: d / 2 + bodyW, h: boxH, d: d, boxH: boxH, bodyW: bodyW, b: b };
+      bb.w = Math.max(bb.w, Math.min(d - ee.w - 4 * PAD, d / 2 - 2 * PAD));
+      ee.w = Math.max(ee.w, Math.min(d - bb.w - 4 * PAD, d / 2 - 2 * PAD));
+      // reparto del diámetro entre "desde"/"hasta": proporcional al ancho de cada texto, con un
+      // piso mínimo por lado (aunque uno sea mucho más largo, el otro no queda aplastado)
+      var totalTxt = bb.w + ee.w + PAD * 4 || 1, minShare = 0.;
+      var fracBegin = Math.min(1 - minShare, Math.max(minShare, (bb.w + 2 * PAD) / totalTxt));
+      return { w: d / 2 + bodyW, h: boxH, d: d, boxH: boxH, bodyW: bodyW, b: b, fracBegin: fracBegin, cc: cc, bb: bb, ee: ee };
     });
     node.draw = function (g, cx, top) {
       var s = node.size(), x0 = cx - s.w / 2;
       var r = s.d / 2, ccx = x0 + r, cy = top + mg + r;   // círculo alineado ARRIBA con margen
       var boxLeft = ccx;
+      var xDiv = ccx - r + s.fracBegin * (2 * r);   // divisor corrido según el ancho de cada lado
       // cuerpo (caja)
       shape(g, "rect", { x: boxLeft, y: top, width: s.bodyW, height: s.boxH });
       // círculo opaco encima (tapa el borde izquierdo de la caja)
       shape(g, "circle", { cx: ccx, cy: cy, r: r });
       line(g, ccx - r, cy, ccx + r, cy);       // diámetro horizontal
-      line(g, ccx, cy, ccx, cy + r);           // divide mitad inferior
-      addText(g, ccx, cy - r / 2 + 2, counter);
-      addText(g, ccx - r / 2, cy + r / 2, begin);
-      addText(g, ccx + r / 2, cy + r / 2, end);
+      // el divisor de la mitad inferior no mide "r" salvo justo en el centro: a una distancia dx
+      // del centro, el borde del círculo está más cerca (circunferencia: y = cy + √(r²-dx²))
+      var dx = xDiv - ccx, divH = Math.sqrt(Math.max(0, r * r - dx * dx));
+      line(g, xDiv, cy, xDiv, cy + divH);
+      // textos no centrados en su mitad: arriba un poco más abajo, abajo un poco más arriba (no
+      // pegan con el arco), y "desde"/"hasta" alineados contra el divisor (ahí el círculo es más
+      // ancho) en vez de centrados hacia el borde curvo
+      var gap = 4;
+      addText(g, ccx, cy - PAD - s.cc.h / 2 + BASE, counter);
+      addText(g, xDiv - gap - s.bb.w / 2, cy + PAD + s.bb.h / 2 - BASE, begin);
+      addText(g, xDiv + gap + s.ee.w / 2, cy + PAD + s.ee.h / 2 - BASE, end);
       // contenido del cuerpo (a la derecha del círculo, alineado arriba)
       body.draw(g, boxLeft + s.d / 2 + PAD + s.b.w / 2, top);
     };
@@ -801,7 +814,7 @@
     }
 
     var pos = casos.map(function (c) { return c.pasos.length ? 1 : 0; });   // última posición por caso (memoria)
-    var ctrl = { caso: 0, timer: null, pila: [], ctxSel: null };
+    var ctrl = { caso: 0, timer: null, pila: [], ctxSel: null, focoNatural: null };
     function steps() { return casos[ctrl.caso].pasos; }
     function minI() { return steps().length ? 1 : 0; }   // el 1er paso ES el inicio (sin estado vacío previo)
     ctrl.i = pos[0];
@@ -902,12 +915,18 @@
       var S = steps(), mi = minI();
       ctrl.i = Math.max(mi, Math.min(S.length, n));
       if (modoPila) {
-        var pilaVieja = ctrl.pila || [];
         var pilaNueva = contextosEn(S, ctrl.i);
-        var topViejo = pilaVieja.length ? pilaVieja[pilaVieja.length - 1].id : null;
         var topNuevo = pilaNueva.length ? pilaNueva[pilaNueva.length - 1].id : null;
+        // si el paso recién aplicado abrió un contexto (llamada), el foco "natural" de este
+        // índice no es el contexto recién creado sino quien invoca: recién en el paso
+        // siguiente (cuando el paso aplicado ya no es la llamada) pasa al subprograma invocado.
+        var pasoAplicado = ctrl.i > 0 ? S[ctrl.i - 1] : null;
+        var focoNatural = (pasoAplicado && pasoAplicado.stack && pilaNueva.length >= 2)
+          ? pilaNueva[pilaNueva.length - 2].id
+          : topNuevo;
         var seleccionValida = pilaNueva.some(function (c) { return c.id === ctrl.ctxSel; });
-        if (topViejo !== topNuevo || !seleccionValida) ctrl.ctxSel = topNuevo;
+        if (focoNatural !== ctrl.focoNatural || !seleccionValida) ctrl.ctxSel = focoNatural;
+        ctrl.focoNatural = focoNatural;
         ctrl.pila = pilaNueva;
       }
       repintarTodo();
@@ -968,6 +987,7 @@
       pos[ctrl.caso] = ctrl.i;   // recordar dónde quedé en el caso actual
       ctrl.caso = c;
       ctrl.ctxSel = null;   // cada caso tiene su propia pila; fuerza reselección del tope al entrar
+      ctrl.focoNatural = null;
       ctrl.irA(pos[c]);     // continuar donde había dejado el caso destino
       if (ctrl.onCaso) ctrl.onCaso(c);
     };
@@ -1479,8 +1499,8 @@
       case "programaprincipal": {
         expectBrace(toks, i, err);
         var bodyMain = parseBlock(toks, i, true, err);
-        // sin encabezado: la marca (I) hace de encabezado y (F) cierra
-        return D.seq([D.marker("I")].concat(bodyMain).concat([D.marker("F")]));
+        // sin encabezado: la marca (C) de "comienzo" hace de encabezado y (F) cierra
+        return D.seq([D.marker("C")].concat(bodyMain).concat([D.marker("F")]));
       }
       case "registro": {
         expectBrace(toks, i, err);

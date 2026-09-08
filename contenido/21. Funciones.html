@@ -1,0 +1,320 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>21. Funciones</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>21. Funciones</h1>
+<p class="nota">Convirtiendo valores.</p>
+
+<p>Ya vimos que los subprogramas nos sirven para dividir un problema más grande en varios más
+chicos, y vimos como primera aproximación los <b>procedimientos</b>, que realizan una acción
+parametrizable, siendo esa acción cualquier cosa que ya podíamos hacer en un programa. Ahora llega
+el turno de las <b>funciones</b>.</p>
+
+<p>Nos adelantamos a aclarar algo: el concepto de función que vamos a ver acá <b>no</b> es el mismo
+concepto de "función" de C, C++ u otros lenguajes, donde cualquier tipo de subprograma —procedimientos
+y funciones— se llama función. Conceptualmente nos vamos a acercar más a la <b>definición
+matemática</b> de una función: una transformación aplicada a los valores de entrada para producir un
+valor de salida.</p>
+
+<blockquote>Una función recibe valores y produce un valor como resultado.</blockquote>
+
+<h2>Qué cambia en el contrato</h2>
+
+<p>A partir de esta definición, el contrato de una función cambia en algunos puntos respecto del de
+un procedimiento:</p>
+
+<ul>
+  <li>El nombre ya no representa una acción, sino que describe lo que <b>es</b>: ejemplos de nombres
+  de función pueden ser <code>seno</code>, <code>coseno</code>, <code>tangente</code>,
+  <code>factorial</code>, etc.</li>
+  <li>Los parámetros son solo de <b>entrada</b>. Hasta ahora solo vimos parámetros de entrada; ya
+  vamos a ver parámetros de salida, pero esos solo aplican a procedimientos.</li>
+  <li>Las funciones retornan un valor, por lo tanto tienen asociado un <b>tipo de retorno</b>: si
+  retornan un número entero será <code>int</code>, si retornan un número real será <code>float</code>,
+  y así.</li>
+</ul>
+
+<p>Hay algo más que conviene remarcar, aunque no está en la lista de arriba: si una función es una
+transformación de valores de entrada a un valor de salida, no debería depender de nada más que eso ni
+modificar nada por fuera de su resultado —no debería leer del teclado, ni escribir por pantalla, ni
+modificar una variable global—. Es decir, una función bien diseñada no debería tener <b>efectos
+secundarios</b>: eso queda del lado de los procedimientos, que sí están pensados para eso. Esto
+conecta con algo que ya vimos: los efectos de lado generan acoplamiento y son más difíciles de
+seguir; una función sin efectos secundarios es mucho más simple de razonar —alcanza con conocer sus
+parámetros para saber todo lo que puede llegar a hacer—.</p>
+
+<h2>Invocando una función</h2>
+
+<p>Para invocar un procedimiento tenemos que dedicar una instrucción exclusivamente a eso. Una
+función, en cambio, tiene un valor de retorno que hay que usar para algo, así que la invocamos
+<b>dentro de una expresión</b> que le dé un uso a ese resultado. Por ejemplo:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`senoDeX := seno(x)`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`senoDeX = sin(x);`</script>
+  </div>
+</div>
+
+<h2>Repensando la potencia</h2>
+
+<p>Repensemos el enunciado que ya resolvimos antes:</p>
+
+<blockquote>Dados dos números enteros <i>a</i> y <i>b</i>, mostrar:
+<ul>
+  <li><i>a</i> elevado a la potencia de <i>b</i></li>
+  <li><i>b</i> elevado a la potencia de <i>a</i></li>
+</ul>
+</blockquote>
+
+<p>Con el concepto de función que manejamos ahora, podemos pensar que <code>Potencia</code> es
+función de <code>base</code> y <code>exponente</code>, y que el valor de retorno es la potencia
+misma. Vamos a modelar la función con un diagrama parecido al de un procedimiento, pero esta vez
+indicando el <b>tipo de retorno</b> al comienzo:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+funcion int Potencia(int base, int exponente) {
+  locales {
+    int potencia
+    int i
+  }
+  potencia := 1
+  para i de 1 a exponente {
+    potencia := potencia * base
+  }
+  retorno potencia
+}
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+int Potencia(int base, int exponente) {
+    int potencia;
+    int i;
+
+    potencia = 1;
+    for (i = 1; i <= exponente; i += 1) {
+        potencia = potencia * base;
+    }
+    return potencia;
+}
+`</script>
+  </div>
+</div>
+
+<p>Aunque hay varias convenciones posibles para nombrar funciones, en este apunte usamos
+<b>PascalCase</b> (empezando con mayúscula) —igual que ya hicimos con los procedimientos—, así se
+distinguen fácil de las variables (<code>camelCase</code>) y las constantes (MAYÚSCULAS). Justamente
+en este ejemplo tenemos <code>Potencia</code> (la función) y <code>potencia</code> (la variable local
+que guarda el resultado parcial): son casi el mismo nombre, y la única diferencia —la mayúscula
+inicial— ya alcanza para saber a qué símbolo nos referimos en cada lugar.</p>
+
+<p>¿Qué diferencias hay con el <code>CalcularYMostrarPotencia</code> de antes? Esta función solo hace
+el cálculo; qué se hace con el resultado lo decidimos después. El nombre también es distinto:
+<code>CalcularYMostrarPotencia</code> es un verbo (dos, en realidad) describiendo una acción;
+<code>Potencia</code> nos dice directamente el nombre de lo que estamos calculando. La última
+instrucción también es importante: en una función, la última instrucción es siempre una instrucción
+de <b>retorno</b>, que indica que hay que volver junto con el valor que devuelve la función —el
+resultado, en este caso, la potencia—.</p>
+
+<h2>El programa completo</h2>
+
+<p>Escribamos entonces la solución utilizando esta función. Como <code>Potencia</code> es una
+función, la podemos usar directamente en una expresión, así que la invocamos directamente en la
+salida:</p>
+
+<script>Reproductor({
+  principal: {
+    diagrama: `
+      programaprincipal {
+        locales {
+          int a
+          int b
+        }
+        leer ≤01≤02a≥≥, ≤03≤04b≥≥
+        escribir ≤06Potencia(a, b)≥
+        escribir ≤08Potencia(b, a)≥
+      }
+    `,
+    código: `
+      int main() {
+          int a;
+          int b;
+
+          ≤01cout << "Ingrese a: ";≥
+          ≤02cin >> a;≥
+          ≤03cout << "Ingrese b: ";≥
+          ≤04cin >> b;≥
+          ≤05cout << "a elevado a b es "≥ << ≤06Potencia(a, b)≥ << endl;
+          ≤07cout << "b elevado a a es "≥ << ≤08Potencia(b, a)≥ << endl;
+
+          ≤09return 0;≥
+      }
+    `
+  },
+  Potencia: {
+    diagrama: `
+      funcion int Potencia(int base, int exponente) {
+        locales {
+          int potencia
+          int i
+        }
+        ≤01potencia≥ := ≤011≥
+        para ≤03≤05i≥≥ de ≤021≥ a ≤03exponente≥ {
+          ≤04potencia≥ := ≤04potencia * base≥
+        }
+        retorno ≤06potencia≥
+      }
+    `,
+    código: `
+      int Potencia(int base, int exponente) {
+          int potencia;
+          int i;
+
+          ≤01potencia = 1;≥
+          for (≤02i = 1≥; ≤03i <= exponente≥; ≤05i += 1≥) {
+              ≤04potencia = potencia * base;≥
+          }
+          ≤06return potencia;≥
+      }
+    `
+  }
+}, {
+  "a: 2, b: 3": [
+    { stack:{ nombre:"main", subprograma:"principal" }, expresiones:{ "a":{}, "b":{} } },
+    { zona:1, salida:"Ingrese a: " },
+    { zona:2, expresiones:{ "a":2 }, salida:"2\n" },
+    { zona:3, salida:"Ingrese b: " },
+    { zona:4, expresiones:{ "b":3 }, salida:"3\n" },
+
+    { zona:[5,6], salida:"a elevado a b es " },
+    { stack:{ nombre:"Potencia(2, 3)", zona:6, subprograma:"Potencia" },
+      expresiones:{ "base":2, "exponente":3, "potencia":{}, "i":{} } },
+    { zona:1, expresiones:{ "potencia":1 } },
+    { zona:2, expresiones:{ "i":1 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":2 } },
+    { zona:5, expresiones:{ "i":2 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":4 } },
+    { zona:5, expresiones:{ "i":3 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":8 } },
+    { zona:5, expresiones:{ "i":4 } },
+    { zona:3 },
+    { zona:6 },
+    { stack:null, zona:6, salida:"8\n" },
+
+    { zona:[7,8], salida:"b elevado a a es " },
+    { stack:{ nombre:"Potencia(3, 2)", zona:8, subprograma:"Potencia" },
+      expresiones:{ "base":3, "exponente":2, "potencia":{}, "i":{} } },
+    { zona:1, expresiones:{ "potencia":1 } },
+    { zona:2, expresiones:{ "i":1 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":3 } },
+    { zona:5, expresiones:{ "i":2 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":9 } },
+    { zona:5, expresiones:{ "i":3 } },
+    { zona:3 },
+    { zona:6 },
+    { stack:null, zona:8, salida:"9\n" },
+
+    { zona:[9,"F"] }
+  ],
+  "a: 3, b: 0": [
+    { stack:{ nombre:"main", subprograma:"principal" }, expresiones:{ "a":{}, "b":{} } },
+    { zona:1, salida:"Ingrese a: " },
+    { zona:2, expresiones:{ "a":3 }, salida:"3\n" },
+    { zona:3, salida:"Ingrese b: " },
+    { zona:4, expresiones:{ "b":0 }, salida:"0\n" },
+
+    { zona:[5,6], salida:"a elevado a b es " },
+    { stack:{ nombre:"Potencia(3, 0)", zona:6, subprograma:"Potencia" },
+      expresiones:{ "base":3, "exponente":0, "potencia":{}, "i":{} } },
+    { zona:1, expresiones:{ "potencia":1 } },
+    { zona:2, expresiones:{ "i":1 } },
+    { zona:3 },
+    { zona:6 },
+    { stack:null, zona:6, salida:"1\n" },
+
+    { zona:[7,8], salida:"b elevado a a es " },
+    { stack:{ nombre:"Potencia(0, 3)", zona:8, subprograma:"Potencia" },
+      expresiones:{ "base":0, "exponente":3, "potencia":{}, "i":{} } },
+    { zona:1, expresiones:{ "potencia":1 } },
+    { zona:2, expresiones:{ "i":1 } },
+    { zona:3 },
+    { zona:4, expresiones:{ "potencia":0 } },
+    { zona:5, expresiones:{ "i":2 } },
+    { zona:3 },
+    { zona:4 },
+    { zona:5, expresiones:{ "i":3 } },
+    { zona:3 },
+    { zona:4 },
+    { zona:5, expresiones:{ "i":4 } },
+    { zona:3 },
+    { zona:6 },
+    { stack:null, zona:8, salida:"0\n" },
+
+    { zona:[9,"F"] }
+  ]
+}, { consola:{ lineas:6 } })</script>
+
+<p>Vemos que, como función que es, <code>Potencia</code> se puede usar directamente en una
+expresión, así que la invocamos directamente en la salida. Probá seguir el código para ver cómo
+ejecuta: fijate que <code>Potencia</code> se invoca dos veces en el mismo programa, y cada invocación
+crea su propio contexto con su propio <code>potencia</code>/<code>i</code>, sin pisarse.</p>
+
+<h2>¿Función o procedimiento?</h2>
+
+<p>Al diseñar un subprograma nuevo, conviene preguntarse si conviene modelarlo como función o como
+procedimiento. Algunas preguntas guía:</p>
+
+<ul>
+  <li>¿Lo que hace es puramente calcular algo a partir de sus parámetros, sin necesidad de leer ni
+  escribir nada? Probablemente sea una función.</li>
+  <li>¿Necesita pedir datos, mostrar resultados, o modificar algo por fuera de sus parámetros?
+  Entonces es un procedimiento.</li>
+  <li>¿El resultado se va a usar dentro de una expresión más grande (otra cuenta, una condición, otro
+  llamado)? Ahí una función encaja mejor: se puede componer directamente.</li>
+  <li>¿Lo que estamos resolviendo es, en el fondo, una acción con un efecto (mostrar algo, guardar
+  algo, modificar algo)? Ahí un procedimiento describe mejor la intención.</li>
+</ul>
+
+<p>No es una regla estricta, ni siempre hay una única respuesta correcta, pero elegir bien entre
+función y procedimiento ayuda a comunicar qué hace cada parte del programa con solo leer su
+encabezado.</p>
+
+<h2>Funciones y procedimientos en C y C++</h2>
+
+<p>Dado que ni C, ni C++ ni varios otros lenguajes suelen hacer distinción conceptual entre función y
+procedimiento —como sí hacen Pascal, Ada, Delphi, Fortran, BASIC y otros—, es que en las bibliotecas
+y en cualquier código existente que veamos muchas veces los "procedimientos" retornan un valor (que
+en general puede ignorarse) y las "funciones" modifican las entradas.</p>
+
+<p>En el código de un procedimiento vimos una palabra que dijimos que íbamos a dejar para después:
+<code>void</code>. Dado que tanto procedimientos como funciones son siempre funciones en C y C++,
+deben tener un tipo de retorno, y ese <code>void</code> que vimos antes sirve para indicar que el
+tipo de retorno no existe (<code>void</code> significa "vacío"/"nulo"/"inválido"); usar
+<code>void</code> nos permite además omitir el <code>return</code>, ya que no vamos a retornar
+nada.</p>
+
+<hr>
+<p class="nota"><a class="volver" href="../index.html">← Índice</a></p>
+
+</body>
+</html>
