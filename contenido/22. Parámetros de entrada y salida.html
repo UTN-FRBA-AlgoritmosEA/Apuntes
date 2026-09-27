@@ -1,0 +1,201 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>22. Parámetros de entrada y salida</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>22. Parámetros de entrada y salida</h1>
+<p class="nota">Pasaje por copia y por referencia.</p>
+
+<p>Ya vimos las definiciones de procedimiento y función, así que ya podemos identificar en qué
+momento usar uno u otra. Sin embargo, hasta ahora solo vimos que las funciones pueden devolver un
+valor. Todos los parámetros que vimos hasta ahora siempre fueron de entrada.</p>
+
+<h2>Parámetros de entrada</h2>
+
+<p>¿Qué significa eso? Que el subprograma que invoca provee esos valores a través de argumentos;
+estos se copian en los parámetros del subprograma invocado, y ahí termina la interacción. Las
+variables originales se mantienen inmutables durante la ejecución del subprograma, porque este
+desconoce por completo de dónde salió el dato: solo conoce el dato con el que tiene que
+trabajar.</p>
+
+<p>Este comportamiento sirve para pasar un dato desde afuera hacia adentro, y por eso se llama "de
+entrada". Cuadra perfecto con la definición de función, donde queremos transformar uno o más valores
+para retornar uno nuevo, pero sin modificar los originales. En procedimientos también es útil —los
+hemos usado, por cierto—, pero también podemos llegar a necesitar que un procedimiento haga
+modificaciones en nuestras variables, y no solo que consuma datos que le pasemos.</p>
+
+<h2>Parámetros de salida y de entrada/salida</h2>
+
+<p>Para esto existen otros dos tipos de parámetros: "de salida" y "de entrada y salida". El primero
+sirve para que el procedimiento pueda devolver un valor a través de un parámetro; el segundo sirve
+para que un procedimiento reciba un valor y pueda modificarlo si hiciese falta.</p>
+
+<h2>Por copia o por referencia</h2>
+
+<p>Estos tres tipos conceptuales de parámetros —entrada, salida y entrada/salida— se implementan a
+través de dos mecanismos distintos:</p>
+
+<ul>
+  <li><b>Parámetro por copia</b>: se copia el valor que se quiere pasar.</li>
+  <li><b>Parámetro por referencia</b>: se copia una referencia a dónde está el valor que se quiere
+  pasar.</li>
+</ul>
+
+<p>Si seguimos la descripción de parámetro de entrada que vimos antes, vamos a darnos cuenta de que
+ahí usamos el mecanismo por copia, ya que no nos interesa saber dónde estaba el dato, solo nos
+interesa el dato. Los otros dos, "salida" y "entrada/salida", sí necesitan saber dónde estaba el
+dato, para poder modificarlo directamente en ese lugar, de forma tal que el valor que escriban
+sobreviva a la ejecución del subprograma (recordemos que las variables locales y los parámetros se
+destruyen al salir de un subprograma).</p>
+
+<h2>¿Qué es una referencia?</h2>
+
+<p>Es un puntero al dato. Vamos a entrar más en detalle cuando veamos punteros, pero por ahora nos
+alcanza con saber que indica dónde está la variable original, así que si cambiamos el valor del
+parámetro lo estamos haciendo directamente en esa variable. Así, al salir del subprograma, el valor
+nuevo sigue escrito ahí.</p>
+
+<p>Veamos un ejemplo con un caso puntual. Supongamos que necesitamos un procedimiento que
+intercambie dos números. Vamos a llamarlo <code>Intercambiar</code>: recibe los dos números y los
+intercambia en el lugar. Es decir, si lo invocamos con <i>a</i> y <i>b</i> valiendo 1 y 2
+respectivamente, al salir del procedimiento <i>a</i> debería valer 2 y <i>b</i> debería valer 1. Lo
+armamos así:</p>
+
+<script>Diagrama`
+procedimiento Intercambiar(int ¡¡&¡¡a, int ¡¡&¡¡b) {
+  locales {
+    int temp
+  }
+  temp := a
+  a := b
+  b := temp
+}
+`</script>
+
+<p>El <code>&amp;</code> indica que el parámetro es por referencia: el valor original nunca se
+copió, así que cada vez que usamos ese parámetro —ya sea para lectura o para modificación—
+accedemos directamente a la variable original.</p>
+
+<h2>El programa completo</h2>
+
+<p>Ejecutá paso a paso: vas a poder ver, moviéndote por la pila de llamadas, cómo cambian las
+variables originales mientras el procedimiento hace el intercambio.</p>
+
+<script>Reproductor({
+  principal: {
+    diagrama: `
+      programaprincipal {
+        locales {
+          int x
+          int y
+        }
+        ≤01x≥ := ≤015≥
+        ≤02y≥ := ≤028≥
+        invocar ≤03Intercambiar≥(≤03x, y≥)
+        escribir ≤04x≥
+        escribir ≤05y≥
+      }
+    `,
+    código: `
+      int main() {
+          int x;
+          int y;
+
+          ≤01x = 5;≥
+          ≤02y = 8;≥
+          ≤03Intercambiar(x, y);≥
+          ≤04cout << "x vale " << x << endl;≥
+          ≤05cout << "y vale " << y << endl;≥
+
+          ≤06return 0;≥
+      }
+    `
+  },
+  Intercambiar: {
+    diagrama: `
+      procedimiento Intercambiar(int &a, int &b) {
+        locales {
+          int temp
+        }
+        ≤01temp≥ := ≤01a≥
+        ≤02a≥ := ≤02b≥
+        ≤03b≥ := ≤03temp≥
+      }
+    `,
+    código: `
+      void Intercambiar(int &a, int &b) {
+          int temp;
+
+          ≤01temp = a;≥
+          ≤02a = b;≥
+          ≤03b = temp;≥
+      ≤04}≥
+    `
+  }
+}, [
+  { stack:{ nombre:"main", subprograma:"principal" }, expresiones:{ "x":{}, "y":{} } },
+  { zona:1, expresiones:{ "x":5 } },
+  { zona:2, expresiones:{ "y":8 } },
+
+  { stack:{ nombre:"Intercambiar(x, y)", zona:3, subprograma:"Intercambiar" },
+    expresiones:{ "a":5, "b":8, "temp":{} } },
+  { zona:1, expresiones:{ "temp":5 } },
+  { zona:2, expresiones:{ "a":8, "^":{ "x":8 } } },
+  { zona:3, expresiones:{ "b":5, "^":{ "y":5 } } },
+  { zona:[4,"R"] },
+  { stack:null },
+
+  { zona:4, salida:"x vale 8\n" },
+  { zona:5, salida:"y vale 5\n" },
+  { zona:[6,"F"] }
+], { consola:{ lineas:4 } })</script>
+
+<h2>¿Qué pasa con los argumentos?</h2>
+
+<p>Los argumentos de un parámetro por referencia tienen una restricción que un parámetro por copia
+no tiene. Por definición, un parámetro por referencia apunta a un lugar donde se encuentra el dato,
+y es por eso que los argumentos que usemos tienen que poder apuntarse o referirse: es decir, siempre
+tienen que ser una expresión asignable, como ya vimos que ocurre con el lado izquierdo de las
+asignaciones. Por ejemplo, esto no se puede hacer:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`invocar Intercambiar(1, 2)`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`Intercambiar(1, 2);`</script>
+  </div>
+</div>
+
+<p>...dado que 1 y 2 no son asignables. Piensen que tampoco tendría sentido que 1 valga 2 y 2 valga
+1, ¿no? En este caso el compilador va a tirar un error, así que ni llegaríamos a ejecutar el
+programa.</p>
+
+<h2>¿Por qué no los llamamos directamente "por copia" y "por referencia"?</h2>
+
+<p>La distinción entre entrada, salida y entrada/salida es conceptual, e indica la dirección de los
+datos. La distinción entre copia y referencia es de implementación, y si bien lo más común es que un
+parámetro de entrada use copia y que uno de salida o entrada/salida use referencia, existen más
+motivos por los cuales podríamos querer pasar una referencia en vez de una copia: por ejemplo,
+porque el dato que queremos pasar es muy grande y queremos evitar copiarlo. En ese caso podríamos
+usar una referencia para un parámetro de entrada, y que siga siendo un parámetro de entrada. Más
+adelante vamos a ver un caso en que el lenguaje nos fuerza a hacer eso, como mecanismo para evitar
+una copia que podría ser muy grande.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="23.%20Recursividad.html">Siguiente: Recursividad →</a>
+</div>
+
+</body>
+</html>

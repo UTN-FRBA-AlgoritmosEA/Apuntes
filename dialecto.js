@@ -737,28 +737,38 @@
     return out;
   }
 
-  function wLeaf(text, cls, chg) { var s = h("span", cls + (chg ? " d-w-chg" : "")); s.textContent = text; return s; }
-  function wCelda(val, prev) {                 // <td> con el valor (tabla anidada pega a los bordes)
-    var c = h("td"), child = wRenderValor(val, prev);
+  // path: la expresión completa hasta este valor ("arreglo[1]", "miRegistro.nombre",
+  // "arreglo[1].nombre", ...), para mostrarla como tooltip. Se arma bajando desde wPanel (que
+  // arranca con el nombre de la variable) y agregando "[i]" en arreglos / ".campo" en registros.
+  function wLeaf(text, cls, chg, path) {
+    var s = h("span", cls + (chg ? " d-w-chg" : ""));
+    s.textContent = text;
+    if (path) s.title = path;
+    return s;
+  }
+  function wCelda(val, prev, path) {           // <td> con el valor (tabla anidada pega a los bordes)
+    var c = h("td"), child = wRenderValor(val, prev, path);
     c.appendChild(child);
     if (child.tagName === "TABLE") c.className = "d-has-tabla";
     return c;
   }
-  function wRenderValor(val, prev) {
-    if (esArr(val)) return wRenderArr(val, esArr(prev) ? prev : []);
-    if (esDesc(val)) return wLeaf("desconocido", "d-unk", !wIgual(val, prev));
-    if (esReg(val)) return wRenderReg(val, esReg(prev) ? prev : {});
-    return wLeaf(String(val), (typeof val === "number") ? "d-num" : "d-str", !wIgual(val, prev));
+  function wRenderValor(val, prev, path) {
+    if (esArr(val)) return wRenderArr(val, esArr(prev) ? prev : [], path);
+    if (esDesc(val)) return wLeaf("desconocido", "d-unk", !wIgual(val, prev), path);
+    if (esReg(val)) return wRenderReg(val, esReg(prev) ? prev : {}, path);
+    return wLeaf(String(val), (typeof val === "number") ? "d-num" : "d-str", !wIgual(val, prev), path);
   }
-  function wRenderReg(rec, prev) {
+  function wRenderReg(rec, prev, path) {
     var t = h("table", "d-reg"), trH = h("tr"), trV = h("tr");
     Object.keys(rec).forEach(function (k) {
       var f = h("td", "d-f"); f.textContent = k; trH.appendChild(f);
-      trV.appendChild(wCelda(rec[k], prev[k]));
+      trV.appendChild(wCelda(rec[k], prev[k], path ? path + "." + k : k));
     });
-    t.appendChild(trH); t.appendChild(trV); return t;
+    t.appendChild(trH); t.appendChild(trV);
+    if (path) t.title = path;
+    return t;
   }
-  function wRenderArr(arr, prev) {
+  function wRenderArr(arr, prev, path) {
     var t = h("table", "d-arr"), i = 0;
     while (i < arr.length) {
       if (esDesc(arr[i])) {                    // colapsar corridas de desconocidos en "..."
@@ -766,10 +776,11 @@
         var r = h("tr"), c = h("td", "d-col"); c.colSpan = 2; c.textContent = "..."; r.appendChild(c); t.appendChild(r);
       } else {
         var rr = h("tr"), ci = h("td", "d-idx"); ci.textContent = i; rr.appendChild(ci);
-        rr.appendChild(wCelda(arr[i], prev[i]));
+        rr.appendChild(wCelda(arr[i], prev[i], (path || "") + "[" + i + "]"));
         t.appendChild(rr); i++;
       }
     }
+    if (path) t.title = path;
     return t;
   }
   function wPanel(estado, prev) {              // lista superior (nombre | valor); null si vacío
@@ -778,7 +789,7 @@
     var t = h("table", "d-w-list");
     keys.forEach(function (k) {
       var r = h("tr"), kc = h("td", "d-w-key"); kc.textContent = k; r.appendChild(kc);
-      r.appendChild(wCelda(estado[k], prev[k]));
+      r.appendChild(wCelda(estado[k], prev[k], k));
       t.appendChild(r);
     });
     return t;

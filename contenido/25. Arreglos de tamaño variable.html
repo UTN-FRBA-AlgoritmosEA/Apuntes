@@ -1,0 +1,283 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>25. Arreglos de tamaño variable</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>25. Arreglos de tamaño variable</h1>
+
+<p class="nota">Cuando el tamaño máximo no coincide con la cantidad real de datos.</p>
+
+<p>Pensemos este problema:</p>
+
+<blockquote>Dados los salarios de los empleados de una empresa (termina con salario igual a 0) se
+pide mostrar todos los valores por encima del promedio. Hay a lo sumo 100 empleados.</blockquote>
+
+<p>Para saber si un salario está por encima del promedio hace falta conocer el promedio, y para
+conocer el promedio hace falta conocer todos los salarios: no podemos resolver el problema a medida
+que nos van llegando los valores. Una vez que tenemos el promedio, necesitamos revisar de nuevo
+todos los valores ingresados para identificar cuáles lo superan, pero no podemos volver a
+pedírselos al usuario —hay que guardarlos—. Como sabemos que hay a lo sumo 100 empleados, podemos
+guardarlos en un arreglo de 100 salarios.</p>
+
+<h2>Guardando los salarios</h2>
+
+<p>A diferencia del arreglo del ejercicio anterior —donde los 10 elementos eran válidos desde el
+arranque—, acá sabemos que no vamos a tener más de 100 valores, pero no sabemos cuántos vamos a
+tener realmente hasta que termine el ingreso. Como el arreglo tiene un tamaño fijo y siempre existen
+esos 100 espacios, tenemos que acompañarlo con una variable adicional que indique cuántos de esos
+espacios son válidos en cada momento. Al arrancar el programa no tenemos ningún salario ingresado, y
+a medida que se van ingresando los vamos guardando en el arreglo y sumando 1 al contador. Como los
+elementos de un arreglo están indexados a partir de 0, lo natural es guardarlos en ese mismo orden:
+el primero en la posición 0, el segundo en la posición 1, y así sucesivamente:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+locales {
+  double salarios[100]
+  int cant
+  double salario
+}
+cant := 0
+leer salario
+mientras salario > 0 {
+  salarios[cant] := salario
+  cant += 1
+  leer salario
+}
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+double salarios[100];
+int cant;
+double salario;
+
+cant = 0;
+cout << "Ingrese un salario (0 para cortar): ";
+cin >> salario;
+while (salario > 0) {
+    salarios[cant] = salario;
+    cant += 1;
+    cout << "Ingrese un salario (0 para cortar): ";
+    cin >> salario;
+}
+`</script>
+  </div>
+</div>
+
+<p><code>cant</code> cumple dos roles a la vez: por un lado indica, en cualquier momento, cuántos
+salarios se ingresaron hasta ahora; por otro, indica exactamente en qué posición hay que guardar el
+próximo valor que se ingrese. Esto funciona porque, cuando todavía no hay ningún elemento,
+<code>cant</code> vale 0 —que es justo la posición donde va el primer valor—. Una vez que guardamos
+el valor en el lugar correcto, sumamos 1 a <code>cant</code>, y ya queda listo para el siguiente
+ingreso.</p>
+
+<p>En el ejercicio anterior, como los 10 contadores eran válidos desde el principio, hacía falta
+inicializar cada uno de ellos antes de empezar. Acá no hace falta una inicialización previa
+separada: en el momento en que cada elemento se vuelve válido, ya se le asigna un valor (el salario
+recién ingresado) —la inicialización se demora hasta ese momento, pero siempre hay una—.</p>
+
+<h2>Mostrando los valores por encima del promedio</h2>
+
+<p>Para mostrar los resultados no hay que recorrer el arreglo completo —los 100 espacios
+reservados—: estaría mal, porque mostraría también los elementos que todavía no se usaron. Hay que
+recorrer solo los elementos válidos, de 0 a <code>cant - 1</code>:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+locales {
+  double salarios[100]
+  int cant
+  double promedio
+  int i
+}
+para i de 0 a cant - 1 {
+  si salarios[i] > promedio {
+    escribir salarios[i]
+  }
+}
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+double salarios[100];
+int cant;
+double promedio;
+int i;
+
+for (i = 0; i < cant; i += 1) {
+    if (salarios[i] > promedio) {
+        cout << salarios[i] << endl;
+    }
+}
+`</script>
+  </div>
+</div>
+
+<h2>El programa completo</h2>
+
+<p>Para armar el programa completo todavía nos falta una parte: acumular la suma de los salarios a
+medida que se van leyendo —junto con guardarlos en el arreglo—, así podemos calcular el promedio
+antes de comparar cada salario contra él.</p>
+
+<script>Reproductor({
+  diagrama: `
+    programaprincipal {
+      locales {
+        double salarios[100]
+        int cant
+        double salario
+        double suma
+        double promedio
+        int i
+      }
+      ≤01cant≥ := ≤010≥
+      ≤02suma≥ := ≤020≥
+      leer ≤03≤04salario≥≥
+      mientras ≤05salario > 0≥ {
+        ≤06salarios[cant]≥ := ≤06salario≥
+        ≤07suma≥ := ≤07suma + salario≥
+        ≤08cant≥ += ≤081≥
+        leer ≤09≤10salario≥≥
+      }
+      ≤11promedio≥ := ≤11suma / cant≥
+      para ≤13≤15i≥≥ de ≤120≥ a ≤13cant - 1≥ {
+        si ≤14salarios[i] > promedio≥ {
+          escribir ≤16salarios[i]≥
+        }
+      }
+    }
+  `,
+  código: `
+    const int CANTIDAD_MAX_EMPLEADOS = 100;
+
+    int main() {
+        double salarios[CANTIDAD_MAX_EMPLEADOS];
+        int cant;
+        double salario;
+        double suma;
+        double promedio;
+        int i;
+
+        ≤01cant = 0;≥
+        ≤02suma = 0;≥
+        ≤03cout << "Ingrese un salario (0 para cortar): ";≥
+        ≤04cin >> salario;≥
+        while (≤05salario > 0≥) {
+            ≤06salarios[cant] = salario;≥
+            ≤07suma = suma + salario;≥
+            ≤08cant += 1;≥
+            ≤09cout << "Ingrese un salario (0 para cortar): ";≥
+            ≤10cin >> salario;≥
+        }
+
+        ≤11promedio = suma / cant;≥
+
+        for (≤12i = 0≥; ≤13i < cant≥; ≤15i += 1≥) {
+            if (≤14salarios[i] > promedio≥) {
+                ≤16cout << salarios[i] << endl;≥
+            }
+        }
+
+        ≤17return 0;≥
+    }
+  `
+}, [
+  { expresiones:{ "salarios":Array(100).fill({}), "cant":{}, "salario":{}, "suma":{}, "promedio":{}, "i":{} } },
+  { zona:1, expresiones:{ "cant":0 } },
+  { zona:2, expresiones:{ "suma":0 } },
+  { zona:3, salida:"Ingrese un salario (0 para cortar): " },
+  { zona:4, expresiones:{ "salario":3000 }, salida:"3000\n" },
+
+  { zona:5 },
+  { zona:6, expresiones:{ "salarios":[3000] } },
+  { zona:7, expresiones:{ "suma":3000 } },
+  { zona:8, expresiones:{ "cant":1 } },
+  { zona:9, salida:"Ingrese un salario (0 para cortar): " },
+  { zona:10, expresiones:{ "salario":8000 }, salida:"8000\n" },
+
+  { zona:5 },
+  { zona:6, expresiones:{ "salarios":[null,8000] } },
+  { zona:7, expresiones:{ "suma":11000 } },
+  { zona:8, expresiones:{ "cant":2 } },
+  { zona:9, salida:"Ingrese un salario (0 para cortar): " },
+  { zona:10, expresiones:{ "salario":5000 }, salida:"5000\n" },
+
+  { zona:5 },
+  { zona:6, expresiones:{ "salarios":[null,null,5000] } },
+  { zona:7, expresiones:{ "suma":16000 } },
+  { zona:8, expresiones:{ "cant":3 } },
+  { zona:9, salida:"Ingrese un salario (0 para cortar): " },
+  { zona:10, expresiones:{ "salario":9000 }, salida:"9000\n" },
+
+  { zona:5 },
+  { zona:6, expresiones:{ "salarios":[null,null,null,9000] } },
+  { zona:7, expresiones:{ "suma":25000 } },
+  { zona:8, expresiones:{ "cant":4 } },
+  { zona:9, salida:"Ingrese un salario (0 para cortar): " },
+  { zona:10, expresiones:{ "salario":2000 }, salida:"2000\n" },
+
+  { zona:5 },
+  { zona:6, expresiones:{ "salarios":[null,null,null,null,2000] } },
+  { zona:7, expresiones:{ "suma":27000 } },
+  { zona:8, expresiones:{ "cant":5 } },
+  { zona:9, salida:"Ingrese un salario (0 para cortar): " },
+  { zona:10, expresiones:{ "salario":0 }, salida:"0\n" },
+
+  { zona:5 },
+
+  { zona:11, expresiones:{ "promedio":5400 } },
+
+  { zona:12, expresiones:{ "i":0 } },
+
+  { zona:13 },
+  { zona:14 },
+  { zona:15, expresiones:{ "i":1 } },
+
+  { zona:13 },
+  { zona:14 },
+  { zona:16, salida:"8000\n" },
+  { zona:15, expresiones:{ "i":2 } },
+
+  { zona:13 },
+  { zona:14 },
+  { zona:15, expresiones:{ "i":3 } },
+
+  { zona:13 },
+  { zona:14 },
+  { zona:16, salida:"9000\n" },
+  { zona:15, expresiones:{ "i":4 } },
+
+  { zona:13 },
+  { zona:14 },
+  { zona:15, expresiones:{ "i":5 } },
+
+  { zona:13 },
+
+  { zona:[17,"F"] }
+], { consola:{ lineas:8 } })</script>
+
+<h2>Arreglos verdaderamente dinámicos</h2>
+
+<p>Para que un arreglo sea completamente dinámico —que la cantidad de elementos, y por lo tanto la
+memoria que reserva, pueda variar de verdad— hacen falta operaciones de memoria bastante más
+complejas, que exceden lo que buscamos explicar acá. Por eso nos limitamos a arreglos de tamaño
+fijo, acompañados, cuando hace falta, de una variable adicional que indique cuántos de esos
+elementos son válidos en cada momento, como hicimos en este apunte.</p>
+
+<hr>
+<p class="nota"><a class="volver" href="../index.html">← Índice</a></p>
+
+</body>
+</html>

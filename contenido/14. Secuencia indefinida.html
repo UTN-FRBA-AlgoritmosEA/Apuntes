@@ -91,7 +91,7 @@ int main() {
   </div>
 </div>
 
-<p>Fijate un detalle importante: hay una <b>lectura antes</b> del <code>mientras</code>, y otra al
+<p>Fijate un detalle importante: hay una <b>lectura antes</b> de la repetición, y otra al
 <b>final</b> del cuerpo. La primera nos da el primer dato, para poder evaluar la condición por
 primera vez —si no leyéramos nada antes, no tendríamos con qué comparar—. La segunda, después de
 procesar cada dato válido, nos consigue el <b>próximo</b> dato justo antes de volver a evaluar la
@@ -187,7 +187,7 @@ que no hay datos en lugar de calcular cualquier cosa.</p>
 
 <p>Probemos con dos casos: uno <b>con datos</b> —la misma secuencia del ejercicio anterior,
 <b>3, 15, 9, 27, 21</b>, cerrada con un <b>0</b> para que corte— y otro <b>sin datos</b>, donde
-lo primero que se ingresa ya es el <b>0</b>. Fijate cómo la condición del <code>mientras</code> se
+lo primero que se ingresa ya es el <b>0</b>. Fijate cómo la condición de la repetición se
 revisa antes de cada vuelta —también en la última, cuando el <code>0</code> hace que el ciclo
 termine— y cómo esa lectura final, la del <code>0</code>, nunca llega a sumarse:</p>
 

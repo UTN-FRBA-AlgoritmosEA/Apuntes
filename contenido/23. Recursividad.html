@@ -1,0 +1,351 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>23. Recursividad</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>23. Recursividad</h1>
+<p class="nota">Ver "recursividad".</p>
+
+<p>Ya vimos que los subprogramas nos permiten dividir un problema en partes más chicas. A veces, esa
+parte más chica es una <b>versión más simple del mismo problema</b>. Cuando un subprograma se invoca
+a sí mismo para resolver una versión más chica de lo que está resolviendo, decimos que es
+<b>recursivo</b>.</p>
+
+<h2>Caso base y caso recursivo</h2>
+
+<p>Todo subprograma recursivo necesita dos partes: un <b>caso base</b> —la versión más simple del
+problema, que se resuelve directamente, sin más invocaciones— y un <b>caso recursivo</b> —que
+resuelve el problema invocándose a sí mismo con una versión más chica, y combina ese resultado para
+resolver el problema actual—. Sin caso base, o si nunca se llega a él, la recursión no termina
+nunca: el mismo riesgo que ya vimos con una repetición indefinida sin condición de corte
+alcanzable.</p>
+
+<h2>Un ejemplo: factorial</h2>
+
+<p>Ya nombramos <code>factorial</code> como ejemplo de nombre de función; ahora vamos a
+implementarla. Su definición matemática ya es recursiva: <i>0! = 1</i> (caso base), y
+<i>n! = n × (n-1)!</i> para <i>n &gt; 0</i> (caso recursivo). La armamos como función —no como
+procedimiento: es un cálculo puro, sin efectos de lado, que cuadra perfecto con lo que ya vimos sobre
+cuándo usar cada uno—:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+funcion int Factorial(int n) {
+  si n == 0 {
+    retorno 1
+  } sino {
+    retorno n * Factorial(n - 1)
+  }
+}
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+int Factorial(int n) {
+    if (n == 0) {
+        return 1;
+    } else {
+        return n * Factorial(n - 1);
+    }
+}
+`</script>
+  </div>
+</div>
+
+<h2>Cada invocación tiene su propio contexto</h2>
+
+<p>Recordemos lo que ya vimos sobre el contexto de ejecución: cada invocación de
+<code>Factorial</code>, aunque sea el mismo subprograma, crea un contexto nuevo con su propio
+<code>n</code> —no se pisan entre sí—. Esto es lo que permite que la recursión funcione:
+<code>Factorial(3)</code> y <code>Factorial(2)</code> son ejecuciones independientes, cada una con
+su propia copia de <code>n</code>, aunque una esté "adentro" de la otra en la pila de llamadas.</p>
+
+<h2>El programa completo</h2>
+
+<p>Ejecutá paso a paso y fijate cómo la pila de llamadas va a crecer hasta seis invocaciones de
+<code>Factorial</code> —<code>Factorial(5)</code> → <code>Factorial(4)</code> →
+<code>Factorial(3)</code> → <code>Factorial(2)</code> → <code>Factorial(1)</code> →
+<code>Factorial(0)</code>, el caso base— y después va a achicarse de a una, multiplicando a medida
+que cada nivel recibe el resultado de la invocación que hizo.</p>
+
+<script>Reproductor({
+  principal: {
+    diagrama: `
+      programaprincipal {
+        locales {
+          int resultado
+        }
+        ≤01resultado≥ := ≤01Factorial(5)≥
+        escribir ≤02resultado≥
+      }
+    `,
+    código: `
+      int main() {
+          int resultado;
+
+          ≤01resultado = Factorial(5);≥
+          ≤02cout << "5! = " << resultado << endl;≥
+
+          ≤03return 0;≥
+      }
+    `
+  },
+  Factorial: {
+    diagrama: `
+      funcion int Factorial(int n) {
+        si ≤01n == 0≥ {
+          retorno ≤021≥
+        } sino {
+          retorno ≤04n * ≤03Factorial(n - 1)≥≥
+        }
+      }
+    `,
+    código: `
+      int Factorial(int n) {
+          if (≤01n == 0≥) {
+              ≤02return 1;≥
+          } else {
+              ≤04return n * ≤03Factorial(n - 1)≥;≥
+          }
+      }
+    `
+  }
+}, [
+  { stack:{ nombre:"main", subprograma:"principal" }, expresiones:{ "resultado":{} } },
+
+  { stack:{ nombre:"Factorial(5)", zona:1, subprograma:"Factorial" }, expresiones:{ "n":5 } },
+  { zona:1 },
+  { stack:{ nombre:"Factorial(4)", zona:3 }, expresiones:{ "n":4 } },
+  { zona:1 },
+  { stack:{ nombre:"Factorial(3)", zona:3 }, expresiones:{ "n":3 } },
+  { zona:1 },
+  { stack:{ nombre:"Factorial(2)", zona:3 }, expresiones:{ "n":2 } },
+  { zona:1 },
+  { stack:{ nombre:"Factorial(1)", zona:3 }, expresiones:{ "n":1 } },
+  { zona:1 },
+  { stack:{ nombre:"Factorial(0)", zona:3 }, expresiones:{ "n":0 } },
+  { zona:1 },
+  { zona:2 },
+
+  { stack:null, expresiones:{ "Factorial(n - 1)":1 } },
+  { zona:4, expresiones:{ "n * Factorial(n - 1)":1 } },
+
+  { stack:null, expresiones:{ "Factorial(n - 1)":1 } },
+  { zona:4, expresiones:{ "n * Factorial(n - 1)":2 } },
+
+  { stack:null, expresiones:{ "Factorial(n - 1)":2 } },
+  { zona:4, expresiones:{ "n * Factorial(n - 1)":6 } },
+
+  { stack:null, expresiones:{ "Factorial(n - 1)":6 } },
+  { zona:4, expresiones:{ "n * Factorial(n - 1)":24 } },
+
+  { stack:null, expresiones:{ "Factorial(n - 1)":24 } },
+  { zona:4, expresiones:{ "n * Factorial(n - 1)":120 } },
+
+  { stack:null, zona:1, expresiones:{ "resultado":120 } },
+  { zona:2, salida:"5! = 120\n" },
+  { zona:[3,"F"] }
+], { consola:{ lineas:3 } })</script>
+
+<h2>Recursividad e iteración</h2>
+
+<p>Cualquier solución recursiva se puede reescribir con un ciclo, y viceversa —no siempre con la
+misma elegancia—. La recursión suele quedar más parecida a la definición del problema: acá, calcar
+la definición matemática de factorial fue casi directo. Pero tiene un costo: cada invocación ocupa
+un contexto nuevo en la pila de llamadas, así que una recursión demasiado profunda puede agotar la
+memoria disponible para la pila —desbordamiento de pila, o <i>stack overflow</i>—. Por eso un caso
+base bien definido y alcanzable no es un detalle menor: es lo que garantiza que la recursión
+termine.</p>
+
+<p>Veamos el mismo <code>Factorial(5)</code>, ahora resuelto sin recursión:</p>
+
+<script>Reproductor({
+  diagrama: `
+    funcion int Factorial(int n) {
+      locales {
+        int resultado
+        int i
+      }
+      ≤01resultado≥ := ≤011≥
+      para ≤03≤05i≥≥ de ≤021≥ a ≤03n≥ {
+        ≤04resultado≥ := ≤04resultado * i≥
+      }
+      retorno ≤06resultado≥
+    }
+  `,
+  código: `
+    int Factorial(int n) {
+        int resultado;
+        int i;
+
+        ≤01resultado = 1;≥
+        for (≤02i = 1≥; ≤03i <= n≥; ≤05i += 1≥) {
+            ≤04resultado = resultado * i;≥
+        }
+        ≤06return resultado;≥
+    }
+  `
+}, [
+  { expresiones:{ "n":5, "resultado":{}, "i":{} } },
+  { zona:1, expresiones:{ "resultado":1 } },
+  { zona:2, expresiones:{ "i":1 } },
+  { zona:3 },
+  { zona:4, expresiones:{ "resultado":1 } },
+  { zona:5, expresiones:{ "i":2 } },
+  { zona:3 },
+  { zona:4, expresiones:{ "resultado":2 } },
+  { zona:5, expresiones:{ "i":3 } },
+  { zona:3 },
+  { zona:4, expresiones:{ "resultado":6 } },
+  { zona:5, expresiones:{ "i":4 } },
+  { zona:3 },
+  { zona:4, expresiones:{ "resultado":24 } },
+  { zona:5, expresiones:{ "i":5 } },
+  { zona:3 },
+  { zona:4, expresiones:{ "resultado":120 } },
+  { zona:5, expresiones:{ "i":6 } },
+  { zona:3 },
+  { zona:6 }
+])</script>
+
+<h2>Fibonacci</h2>
+
+<p>Otro ejemplo clásico, con una definición matemática que ya viene recursiva: <i>F(0) = 1</i> y
+<i>F(1) = 1</i> (dos casos base), y <i>F(n) = F(n-1) + F(n-2)</i> para <i>n &gt; 1</i>. A diferencia
+de <code>Factorial</code>, acá cada invocación —salvo los casos base— hace <b>dos</b> llamadas
+recursivas. Ejecutá paso a paso <code>Fibonacci(5)</code> y fijate en particular que
+<code>Fibonacci(2)</code> se invoca <b>varias veces</b>, siempre con contextos completamente
+independientes: es exactamente el trabajo repetido que explica por qué la cantidad de invocaciones
+crece tan rápido.</p>
+
+<script>Reproductor({
+  diagrama: `
+    funcion int Fibonacci(int n) {
+      si ≤01n == 0 || n == 1≥ {
+        retorno ≤021≥
+      } sino {
+        retorno ≤05≤03Fibonacci(n - 1)≥ + ≤04Fibonacci(n - 2)≥≥
+      }
+    }
+  `,
+  código: `
+    int Fibonacci(int n) {
+        if (≤01n == 0 || n == 1≥) {
+            ≤02return 1;≥
+        } else {
+            return ≤05≤03Fibonacci(n - 1)≥ + ≤04Fibonacci(n - 2)≥≥;
+        }
+    }
+  `
+}, [
+  { stack:{ nombre:"Fibonacci(5)" }, expresiones:{ "n":5 } },
+  { zona:1 },
+
+  { stack:{ nombre:"Fibonacci(4)", zona:3 }, expresiones:{ "n":4 } },
+  { zona:1 },
+
+  { stack:{ nombre:"Fibonacci(3)", zona:3 }, expresiones:{ "n":3 } },
+  { zona:1 },
+
+  { stack:{ nombre:"Fibonacci(2)", zona:3 }, expresiones:{ "n":2 } },
+  { zona:1 },
+
+  { stack:{ nombre:"Fibonacci(1)", zona:3 }, expresiones:{ "n":1 } },
+  { zona:1 },
+  { zona:2 },
+  { stack:null, expresiones:{ "Fibonacci(n - 1)":1 } },
+
+  { stack:{ nombre:"Fibonacci(0)", zona:4 }, expresiones:{ "n":0 } },
+  { zona:1 },
+  { zona:2 },
+  { stack:null, expresiones:{ "Fibonacci(n - 2)":1 } },
+  { zona:5, expresiones:{ "Fibonacci(n - 1) + Fibonacci(n - 2)":2 } },
+
+  { stack:null, expresiones:{ "Fibonacci(n - 1)":2 } },
+
+  { stack:{ nombre:"Fibonacci(1)", zona:4 }, expresiones:{ "n":1 } },
+  { zona:1 },
+  { zona:2 },
+  { stack:null, expresiones:{ "Fibonacci(n - 2)":1 } },
+  { zona:5, expresiones:{ "Fibonacci(n - 1) + Fibonacci(n - 2)":3 } },
+
+  { stack:null, expresiones:{ "Fibonacci(n - 1)":3 } },
+
+  { stack:{ nombre:"Fibonacci(2)", zona:4 }, expresiones:{ "n":2 } },
+  { zona:1 },
+
+  { stack:{ nombre:"Fibonacci(1)", zona:3 }, expresiones:{ "n":1 } },
+  { zona:1 },
+  { zona:2 },
+  { stack:null, expresiones:{ "Fibonacci(n - 1)":1 } },
+
+  { stack:{ nombre:"Fibonacci(0)", zona:4 }, expresiones:{ "n":0 } },
+  { zona:1 },
+  { zona:2 },
+  { stack:null, expresiones:{ "Fibonacci(n - 2)":1 } },
+  { zona:5, expresiones:{ "Fibonacci(n - 1) + Fibonacci(n - 2)":2 } },
+
+  { stack:null, expresiones:{ "Fibonacci(n - 2)":2 } },
+  { zona:5, expresiones:{ "Fibonacci(n - 1) + Fibonacci(n - 2)":5 } },
+
+  { stack:null, expresiones:{ "Fibonacci(n - 1)":5 } },
+
+  { stack:{ nombre:"Fibonacci(3)", zona:4 }, expresiones:{ "n":3 } },
+  { zona:1 },
+
+  { stack:{ nombre:"Fibonacci(2)", zona:3 }, expresiones:{ "n":2 } },
+  { zona:1 },
+
+  { stack:{ nombre:"Fibonacci(1)", zona:3 }, expresiones:{ "n":1 } },
+  { zona:1 },
+  { zona:2 },
+  { stack:null, expresiones:{ "Fibonacci(n - 1)":1 } },
+
+  { stack:{ nombre:"Fibonacci(0)", zona:4 }, expresiones:{ "n":0 } },
+  { zona:1 },
+  { zona:2 },
+  { stack:null, expresiones:{ "Fibonacci(n - 2)":1 } },
+  { zona:5, expresiones:{ "Fibonacci(n - 1) + Fibonacci(n - 2)":2 } },
+
+  { stack:null, expresiones:{ "Fibonacci(n - 1)":2 } },
+
+  { stack:{ nombre:"Fibonacci(1)", zona:4 }, expresiones:{ "n":1 } },
+  { zona:1 },
+  { zona:2 },
+  { stack:null, expresiones:{ "Fibonacci(n - 2)":1 } },
+  { zona:5, expresiones:{ "Fibonacci(n - 1) + Fibonacci(n - 2)":3 } },
+
+  { stack:null, expresiones:{ "Fibonacci(n - 2)":3 } },
+  { zona:5, expresiones:{ "Fibonacci(n - 1) + Fibonacci(n - 2)":8 } }
+])</script>
+
+<p><code>Fibonacci(5)</code> es un número chico, y ya hacen falta 15 invocaciones para resolverlo. Si
+contamos todas las invocaciones necesarias para mostrar <code>Fibonacci(0)</code> a
+<code>Fibonacci(5)</code>, son 34 invocaciones en total; llegar hasta <code>Fibonacci(10)</code> ya
+implica 453. Aunque una función sea recursiva <b>por definición</b>, la implementación recursiva no
+siempre es la mejor opción.</p>
+
+<p>Dicho esto, las implementaciones recursivas, cuando se justifican y no penalizan el rendimiento,
+suelen ser más elegantes y fáciles de comprender. Para quien usa el programa es lo mismo qué
+implementación elijamos, así que optar por recursividad puede ser una buena decisión si nos permite
+expresar la solución de forma más clara, simple y mantenible, sin comprometer la eficiencia del
+programa.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="24.%20Arreglos.html">Siguiente: Arreglos →</a>
+</div>
+
+</body>
+</html>

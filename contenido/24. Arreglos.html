@@ -1,0 +1,309 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>24. Arreglos</title>
+<script src="../dialecto.js"></script>
+<link rel="stylesheet" href="../estilos/apunte.css">
+<script src="../estilos/apunte.js" defer></script>
+</head>
+<body>
+
+<a class="volver" href="../index.html">← Índice</a>
+
+<h1>24. Arreglos</h1>
+
+<p class="nota">Varios valores del mismo tipo, bajo un mismo nombre.</p>
+
+<p>Intentemos resolver este enunciado:</p>
+
+<blockquote>Se ingresan las notas de un examen. Se pide mostrar cuántas veces se repite cada nota.
+El ingreso termina con una nota igual a 0.</blockquote>
+
+<h2>Empecemos con un caso más simple</h2>
+
+<p>Antes de resolver el problema completo, pensemos algo más chico: ¿cuántos alumnos se sacaron 10?
+Es un patrón que ya conocemos —una secuencia terminada en un centinela (0), con un contador que solo
+se incrementa cuando se cumple una condición—:</p>
+
+<div class="ejemplo">
+  <div class="ejemplo-panel" data-titulo="Diagrama">
+    <script>Diagrama`
+programaprincipal {
+  locales {
+    int nota
+    int cantidadDeDieces
+  }
+  cantidadDeDieces := 0
+  leer nota
+  mientras nota != 0 {
+    si nota == 10 {
+      cantidadDeDieces += 1
+    }
+    leer nota
+  }
+  escribir cantidadDeDieces
+}
+`</script>
+  </div>
+  <div class="ejemplo-panel" data-titulo="Código">
+    <script>Código`
+#include <iostream>
+using namespace std;
+
+int main() {
+    int nota;
+    int cantidadDeDieces;
+
+    cantidadDeDieces = 0;
+    cout << "Ingrese una nota (0 para cortar): ";
+    cin >> nota;
+    while (nota != 0) {
+        if (nota == 10) {
+            cantidadDeDieces += 1;
+        }
+        cout << "Ingrese una nota (0 para cortar): ";
+        cin >> nota;
+    }
+    cout << "Cantidad de dieces: " << cantidadDeDieces << endl;
+
+    return 0;
+}
+`</script>
+  </div>
+</div>
+
+<p>Pero el enunciado no pide solo la cantidad de dieces: pide cuántas veces se repite <b>cada</b>
+nota. Siguiendo esta misma idea, necesitaríamos un contador para cada nota posible —uno para el 1,
+otro para el 2, y así hasta el 10—: <code>cantidadDeUnos</code>, <code>cantidadDeDoses</code>,
+<code>cantidadDeTreses</code>... Esto no escala: son 10 variables casi idénticas, y si el problema
+tuviera 100 notas posibles serían 100 variables. Hace falta otra herramienta.</p>
+
+<h2>Arreglos</h2>
+
+<p>Un <b>arreglo</b> permite guardar varios datos del mismo tipo bajo un mismo nombre. Cada dato,
+valor o elemento del arreglo es único y tiene su propio espacio de almacenamiento, y para acceder a
+cada uno se usa un <b>índice</b>: los índices son secuenciales, a partir de <b>0</b>. Un arreglo,
+además de un tipo de dato, tiene asociado un <b>tamaño</b>: la cantidad de valores distintos que
+puede almacenar.</p>
+
+<p>Volviendo a nuestro problema: en vez de 10 variables sueltas, necesitamos 10 contadores, así que
+un arreglo de 10 enteros nos sirve:</p>
+
+<script>Diagrama`
+locales {
+  int contadores[CANTIDAD_NOTAS]
+}
+`</script>
+
+<p>(<code>CANTIDAD_NOTAS</code> ya está declarada como una constante global,
+<code>const int CANTIDAD_NOTAS = 10;</code>.)</p>
+
+<p>Al declararlo, el arreglo ya reserva espacio para sus 10 elementos —los diez existen desde ese
+momento—, pero cada uno arranca con un valor <b>desconocido</b>, igual que cualquier variable sin
+inicializar, hasta que le asignemos algo.</p>
+
+<p>Como el arreglo tiene 10 elementos, sus índices válidos van de 0 a 9 inclusive. Pero las notas
+van de 1 a 10 —no de 0 a 9—, así que hace falta una forma de convertir cada nota en un índice. La
+solución más fácil es restarle 1 a la nota: la nota 1 va al índice 0, la nota 2 al índice 1, y así
+hasta la nota 10, que va al índice 9.</p>
+
+<p>Eso resuelve cómo acumular en el contador correspondiente según la nota que se ingresa, pero es
+solo una parte del problema. Los contadores necesitan inicializarse en 0 antes de usarlos, y al
+final hay que mostrar los 10 resultados. Para inicializarlos, recorremos del índice 0 al 9
+asignando 0 a cada elemento; para mostrarlos, recorremos de nuevo, pero esta vez hay que hacer el
+camino inverso, de índice a nota: el índice 0 corresponde a la nota 1, el índice 1 a la nota 2, y
+así hasta el índice 9, que corresponde a la nota 10.</p>
+
+<h2>El programa completo</h2>
+
+<p>Una aclaración antes de ver el programa completo: en el diagrama, por simplicidad, vamos a usar
+directamente el valor <code>9</code> como límite del recorrido, en vez de escribir
+<code>CANTIDAD_NOTAS - 1</code>. En el código, en cambio, conviene siempre darle un nombre a los
+"números mágicos" —evitar números sueltos sin explicación—, así que ahí seguimos usando la
+constante. Fijate además que el diagrama recorre "de 0 a 9", mientras que el código dice
+<code>i = 0; i &lt; CANTIDAD_NOTAS</code> (con <code>&lt;</code>, no <code>&lt;=</code>): son dos
+formas distintas de expresar el mismo recorrido —de 0 a 9 inclusive—, ya que <code>i &lt; 10</code>
+es lo mismo que <code>i &lt;= 9</code>.</p>
+
+<script>Reproductor({
+  diagrama: `
+    programaprincipal {
+      locales {
+        int contadores[CANTIDAD_NOTAS]
+        int i
+        int nota
+      }
+      para ≤02≤04i≥≥ de ≤010≥ a ≤029≥ {
+        ≤03contadores[i]≥ := ≤030≥
+      }
+      leer ≤05≤06nota≥≥
+      mientras ≤07nota != 0≥ {
+        ≤08contadores[nota - 1] += 1≥
+        leer ≤09≤10nota≥≥
+      }
+      para ≤12≤14i≥≥ de ≤110≥ a ≤129≥ {
+        escribir ≤13i + 1, contadores[i]≥
+      }
+    }
+  `,
+  código: `
+    const int CANTIDAD_NOTAS = 10;
+
+    int main() {
+        int contadores[CANTIDAD_NOTAS];
+        int i;
+        int nota;
+
+        for (≤01i = 0≥; ≤02i < CANTIDAD_NOTAS≥; ≤04i += 1≥) {
+            ≤03contadores[i] = 0;≥
+        }
+        ≤05cout << "Ingrese una nota (0 para cortar): ";≥
+        ≤06cin >> nota;≥
+        while (≤07nota != 0≥) {
+            ≤08contadores[nota - 1] += 1;≥
+            ≤09cout << "Ingrese una nota (0 para cortar): ";≥
+            ≤10cin >> nota;≥
+        }
+        for (≤11i = 0≥; ≤12i < CANTIDAD_NOTAS≥; ≤14i += 1≥) {
+            ≤13cout << "La nota " << i + 1 << " se repite " << contadores[i] << " veces" << endl;≥
+        }
+
+        ≤15return 0;≥
+    }
+  `
+}, [
+  { expresiones:{ "contadores":[{},{},{},{},{},{},{},{},{},{}], "i":{}, "nota":{} } },
+
+  { zona:1, expresiones:{ "i":0 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[0] } },
+  { zona:4, expresiones:{ "i":1 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[null,0] } },
+  { zona:4, expresiones:{ "i":2 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[null,null,0] } },
+  { zona:4, expresiones:{ "i":3 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[null,null,null,0] } },
+  { zona:4, expresiones:{ "i":4 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[null,null,null,null,0] } },
+  { zona:4, expresiones:{ "i":5 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[null,null,null,null,null,0] } },
+  { zona:4, expresiones:{ "i":6 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[null,null,null,null,null,null,0] } },
+  { zona:4, expresiones:{ "i":7 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[null,null,null,null,null,null,null,0] } },
+  { zona:4, expresiones:{ "i":8 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[null,null,null,null,null,null,null,null,0] } },
+  { zona:4, expresiones:{ "i":9 } },
+  { zona:2 },
+  { zona:3, expresiones:{ "contadores":[null,null,null,null,null,null,null,null,null,0] } },
+  { zona:4, expresiones:{ "i":10 } },
+  { zona:2 },
+
+  { zona:5, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:6, expresiones:{ "nota":7 }, salida:"7\n" },
+
+  { zona:7 },
+  { zona:8, expresiones:{ "contadores":[null,null,null,null,null,null,1] } },
+  { zona:9, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:10, expresiones:{ "nota":9 }, salida:"9\n" },
+
+  { zona:7 },
+  { zona:8, expresiones:{ "contadores":[null,null,null,null,null,null,null,null,1] } },
+  { zona:9, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:10, expresiones:{ "nota":7 }, salida:"7\n" },
+
+  { zona:7 },
+  { zona:8, expresiones:{ "contadores":[null,null,null,null,null,null,2] } },
+  { zona:9, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:10, expresiones:{ "nota":10 }, salida:"10\n" },
+
+  { zona:7 },
+  { zona:8, expresiones:{ "contadores":[null,null,null,null,null,null,null,null,null,1] } },
+  { zona:9, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:10, expresiones:{ "nota":7 }, salida:"7\n" },
+
+  { zona:7 },
+  { zona:8, expresiones:{ "contadores":[null,null,null,null,null,null,3] } },
+  { zona:9, salida:"Ingrese una nota (0 para cortar): " },
+  { zona:10, expresiones:{ "nota":0 }, salida:"0\n" },
+
+  { zona:7 },
+
+  { zona:11, expresiones:{ "i":0 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 1 se repite 0 veces\n" },
+  { zona:14, expresiones:{ "i":1 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 2 se repite 0 veces\n" },
+  { zona:14, expresiones:{ "i":2 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 3 se repite 0 veces\n" },
+  { zona:14, expresiones:{ "i":3 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 4 se repite 0 veces\n" },
+  { zona:14, expresiones:{ "i":4 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 5 se repite 0 veces\n" },
+  { zona:14, expresiones:{ "i":5 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 6 se repite 0 veces\n" },
+  { zona:14, expresiones:{ "i":6 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 7 se repite 3 veces\n" },
+  { zona:14, expresiones:{ "i":7 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 8 se repite 0 veces\n" },
+  { zona:14, expresiones:{ "i":8 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 9 se repite 1 veces\n" },
+  { zona:14, expresiones:{ "i":9 } },
+  { zona:12 },
+  { zona:13, salida:"La nota 10 se repite 1 veces\n" },
+  { zona:14, expresiones:{ "i":10 } },
+  { zona:12 },
+
+  { zona:[15,"F"] }
+], { consola:{ lineas:8 } })</script>
+
+<h2>Acceso directo y secuencial</h2>
+
+<p>A un arreglo se puede acceder de dos formas. El acceso <b>directo</b> usa un índice calculado
+para ir exactamente a la posición que corresponde —así accedimos a <code>contadores[nota - 1]</code>
+al acumular, calculando el índice a partir de la nota ingresada—. El acceso <b>secuencial</b>
+recorre todos los índices en orden, uno tras otro —así inicializamos y así mostramos los resultados,
+con las dos repeticiones que van de 0 a 9—. El programa que
+acabamos de ver usa las dos formas.</p>
+
+<h2>Tamaño estático y dinámico</h2>
+
+<p>El tamaño de un arreglo puede ser <b>estático</b> —cuando es fijo, solemos indicarlo con una
+constante, como hicimos acá con <code>CANTIDAD_NOTAS</code>— o <b>dinámico</b> —cuando puede
+cambiar—. En este segundo caso, hace falta acompañar el arreglo con un contador de elementos, ya
+que el tamaño del arreglo por sí solo ya no alcanza para saber cuántos de sus elementos están
+realmente en uso.</p>
+
+<p>Dentro del alcance de la materia, si bien vamos a usar arreglos dinámicos, siempre los vamos a
+usar con un tamaño estático por debajo: es decir, de tamaño fijo, donde nuestro contador de
+elementos válidos indica cuáles elementos del arreglo son válidos, a pesar de que tengamos
+reservado espacio para más. Así que, en el contexto de la materia, siempre que veamos un arreglo
+tenemos que identificar su tamaño, aunque no usemos todos los elementos: ese tamaño determina el
+máximo de elementos válidos que podemos tener en un arreglo dinámico.</p>
+
+<hr>
+<div class="nota" style="display:flex; justify-content:space-between; gap:16px;">
+  <a class="volver" href="../index.html">← Índice</a>
+  <a class="volver" href="25.%20Arreglos%20de%20tama%C3%B1o%20variable.html">Siguiente: Arreglos de tamaño variable →</a>
+</div>
+
+</body>
+</html>
